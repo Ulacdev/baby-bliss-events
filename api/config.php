@@ -1,47 +1,25 @@
 <?php
 error_reporting(E_ALL);
-ini_set('display_errors', 0); // Disable display_errors to prevent HTML error output
+ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 
-// Only set headers and handle OPTIONS if not running from CLI
+// Set JSON header first, before any other output
 if (php_sapi_name() !== 'cli') {
     header('Content-Type: application/json; charset=utf-8');
+}
 
-    // CORS headers for cross-origin requests
-    // Allow requests from Vercel domains and localhost
-    $allowed_origins = [
-        'https://vercel.app',
-        'https://*.vercel.app',
-        'https://baby-bliss-events.vercel.app',
-        'http://localhost:5173',
-        'http://localhost:8080',
-        'http://localhost:3000',
-        'https://babyblissbooking.great-site.net'
-    ];
-
-    $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
-
-    // Check if origin is allowed
-    $allowed = false;
-    foreach ($allowed_origins as $allowed_origin) {
-        if ($allowed_origin === '*' || $origin === $allowed_origin || fnmatch($allowed_origin, $origin)) {
-            $allowed = true;
-            break;
-        }
-    }
-
-    // Set CORS headers
-    if ($allowed || in_array('*', $allowed_origins)) {
-        header('Access-Control-Allow-Origin: ' . ($origin ?: '*'));
-        header('Access-Control-Allow-Credentials: true');
-    }
-
+// CORS handling - simplified for InfinityFree compatibility
+if (php_sapi_name() !== 'cli') {
+    // Always allow CORS for now (InfinityFree has restrictions)
+    header('Access-Control-Allow-Origin: *');
     header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS, PATCH');
     header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
     header('Access-Control-Max-Age: 86400');
+    header('Access-Control-Allow-Credentials: true');
 
     // Handle preflight OPTIONS request
-    if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+        http_response_code(200);
         exit(0);
     }
 }
