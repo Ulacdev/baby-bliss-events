@@ -18,10 +18,20 @@ if (php_sapi_name() !== 'cli') {
 }
 
 // Database configuration
-define('DB_HOST', 'localhost');
-define('DB_USER', 'root');
-define('DB_PASS', '');
-define('DB_NAME', 'baby_bliss');
+if (getenv('DATABASE_URL')) {
+    // Railway provides DATABASE_URL like: mysql://user:pass@host:port/db
+    $url = parse_url(getenv('DATABASE_URL'));
+    define('DB_HOST', $url['host']);
+    define('DB_USER', $url['user']);
+    define('DB_PASS', $url['pass']);
+    define('DB_NAME', ltrim($url['path'], '/'));
+} else {
+    // Local development fallback
+    define('DB_HOST', 'localhost');
+    define('DB_USER', 'root');
+    define('DB_PASS', '');
+    define('DB_NAME', 'baby_bliss');
+}
 
 // Create database connection
 function getDBConnection()
