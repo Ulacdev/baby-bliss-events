@@ -5,11 +5,40 @@ ini_set('log_errors', 1);
 
 // Only set headers and handle OPTIONS if not running from CLI
 if (php_sapi_name() !== 'cli') {
-    header('Content-Type: application/json');
-    // CORS headers are handled by .htaccess file
-    // header('Access-Control-Allow-Origin: *');
-    // header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-    // header('Access-Control-Allow-Headers: Content-Type, Authorization');
+    header('Content-Type: application/json; charset=utf-8');
+
+    // CORS headers for cross-origin requests
+    // Allow requests from Vercel domains and localhost
+    $allowed_origins = [
+        'https://vercel.app',
+        'https://*.vercel.app',
+        'https://baby-bliss-events.vercel.app',
+        'http://localhost:5173',
+        'http://localhost:8080',
+        'http://localhost:3000',
+        'https://babyblissbooking.great-site.net'
+    ];
+
+    $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+
+    // Check if origin is allowed
+    $allowed = false;
+    foreach ($allowed_origins as $allowed_origin) {
+        if ($allowed_origin === '*' || $origin === $allowed_origin || fnmatch($allowed_origin, $origin)) {
+            $allowed = true;
+            break;
+        }
+    }
+
+    // Set CORS headers
+    if ($allowed || in_array('*', $allowed_origins)) {
+        header('Access-Control-Allow-Origin: ' . ($origin ?: '*'));
+        header('Access-Control-Allow-Credentials: true');
+    }
+
+    header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS, PATCH');
+    header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
+    header('Access-Control-Max-Age: 86400');
 
     // Handle preflight OPTIONS request
     if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
@@ -32,11 +61,11 @@ if (getenv('MYSQLHOST')) {
     define('DB_PASS', $url['pass']);
     define('DB_NAME', ltrim($url['path'], '/'));
 } else {
-    // Local development fallback
-    define('DB_HOST', 'localhost');
-    define('DB_USER', 'root');
-    define('DB_PASS', '');
-    define('DB_NAME', 'baby_bliss');
+    // InfinityFree database configuration
+    define('DB_HOST', 'sql100.infinityfree.com');
+    define('DB_USER', 'if0_40697563');
+    define('DB_PASS', 'nEedRr5f39Aby');
+    define('DB_NAME', 'if0_40697563_baby_bliss');
 }
 
 // Create database connection

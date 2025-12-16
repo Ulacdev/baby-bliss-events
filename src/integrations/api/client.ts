@@ -1,6 +1,7 @@
 
 // Custom API client to replace Supabase
-const API_BASE_URL = 'https://babyblissbooking.great-site.net/api';
+// Use environment variable or fallback to production URL
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://babyblissbooking.great-site.net/api';
 
 interface AuthResponse {
   user: {
@@ -55,6 +56,8 @@ class ApiClient {
       const response = await fetch(url, {
         ...options,
         headers,
+        mode: 'cors', // Explicitly enable CORS
+        credentials: 'include', // Include credentials if needed
       });
 
       console.log('API Response status:', response.status);
@@ -87,6 +90,19 @@ class ApiClient {
         throw new Error('Invalid response format from server');
       }
     } catch (error) {
+      // Provide better error messaging for CORS and network issues
+      if (error instanceof TypeError) {
+        const message = (error as Error).message;
+        if (message.includes('Failed to fetch')) {
+          console.error('CORS Error or Network Error:', {
+            url,
+            apiUrl: API_BASE_URL,
+            error: error,
+            hint: 'Check if API server is running and CORS is properly configured'
+          });
+          throw new Error(`Failed to connect to API at ${API_BASE_URL}. CORS or network issue. Check console for details.`);
+        }
+      }
       console.error('API Request failed:', error);
       throw error;
     }
