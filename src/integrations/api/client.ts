@@ -1,6 +1,6 @@
 
 // Custom API client to replace Supabase
-const API_BASE_URL = 'https://baby-bliss-events.onrender.com/api';
+const API_BASE_URL = 'https://baby-bliss-events-production.up.railway.app/api';
 
 interface AuthResponse {
   user: {
