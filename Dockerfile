@@ -10,8 +10,10 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install gd zip pdo pdo_mysql mysqli
 
-# Enable Apache mod_rewrite
-RUN a2enmod rewrite
+# Enable Apache mod_rewrite and configure MPM
+RUN a2enmod rewrite && \
+    a2dismod mpm_event && \
+    a2enmod mpm_prefork
 
 # Set working directory
 WORKDIR /var/www/html
