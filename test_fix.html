@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHP Configuration Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .code {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 PHP Configuration Fix Test</h1>
+        <p>This page tests if the PHP configuration issues have been resolved.</p>
+
+        <h2>Test Results</h2>
+        <div id="results"></div>
+
+        <h2>Manual Tests</h2>
+        <button onclick="testUsersAPI()">Test Users API</button>
+        <button onclick="testSimpleAPI()">Test Simple Test API</button>
+        <button onclick="testUpdateUser()">Test Update User</button>
+
+        <h2>Test Endpoints</h2>
+        <div class="code">
+Direct API Tests:
+• http://localhost/simple_users_test.php?action=list
+• http://localhost/simple_users_test.php?action=update
+
+Diagnostic Tools:
+• http://localhost/php_diagnostic_and_fix.php
+        </div>
+
+        <h2>Instructions</h2>
+        <ol>
+            <li><strong>Check PHP execution:</strong> If you see PHP code instead of "PHP is working!" below, PHP is not executing</li>
+            <li><strong>Test APIs:</strong> Click the test buttons above</li>
+            <li><strong>Try the application:</strong> Go back to your app and test the update user function</li>
+            <li><strong>If still broken:</strong> Run the diagnostic tool at php_diagnostic_and_fix.php</li>
+        </ol>
+
+        <h2>Simple PHP Test</h2>
+        <div id="php-test"></div>
+    </div>
+
+    <script>
+        // Test PHP execution
+        fetch('php_test.php')
+            .then(response => response.text())
+            .then(data => {
+                const testDiv = document.getElementById('php-test');
+                if (data.includes('PHP is working!')) {
+                    testDiv.innerHTML = '<div class="test-result success">✅ PHP is executing correctly!</div>';
+                } else {
+                    testDiv.innerHTML = '<div class="test-result error">❌ PHP is NOT executing. You see: ' + data + '</div>';
+                }
+            })
+            .catch(error => {
+                document.getElementById('php-test').innerHTML = 
+                    '<div class="test-result error">❌ Cannot reach PHP test file: ' + error.message + '</div>';
+            });
+
+        // Test functions
+        function testUsersAPI() {
+            testEndpoint('users.php?action=list', 'Main Users API');
+        }
+
+        function testSimpleAPI() {
+            testEndpoint('simple_users_test.php?action=list', 'Simple Test API');
+        }
+
+        function testEndpoint(url, name) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML += `<div class="test-result warning">Testing ${name}...</div>`;
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        resultsDiv.innerHTML += `<div class="test-result success">✅ ${name} working! Found ${data.users ? data.users.length : 'N/A'} users</div>`;
+                    } else {
+                        resultsDiv.innerHTML += `<div class="test-result error">❌ ${name} returned error: ${data.message || 'Unknown error'}</div>`;
+                    }
+                })
+                .catch(error => {
+                    resultsDiv.innerHTML += `<div class="test-result error">❌ ${name} failed: ${error.message}</div>`;
+                });
+        }
+
+        function testUpdateUser() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML += '<div class="test-result warning">Testing update user...</div>';
+            
+            fetch('simple_users_test.php?action=update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    id: 1,
+                    username: 'testuser',
+                    email: 'test@example.com',
+                    role: 'staff'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    resultsDiv.innerHTML += '<div class="test-result success">✅ Update user working!</div>';
+                } else {
+                    resultsDiv.innerHTML += '<div class="test-result error">❌ Update failed: ' + (data.message || 'Unknown error') + '</div>';
+                }
+            })
+            .catch(error => {
+                resultsDiv.innerHTML += '<div class="test-result error">❌ Update test failed: ' + error.message + '</div>';
+            });
+        }
+    </script>
+</body>
+</html>
