@@ -18,8 +18,14 @@ if (php_sapi_name() !== 'cli') {
 }
 
 // Database configuration
-if (getenv('DATABASE_URL')) {
-    // Railway provides DATABASE_URL like: mysql://user:pass@host:port/db
+if (getenv('MYSQLHOST')) {
+    // Railway MySQL environment variables
+    define('DB_HOST', getenv('MYSQLHOST'));
+    define('DB_USER', getenv('MYSQLUSER'));
+    define('DB_PASS', getenv('MYSQLPASSWORD'));
+    define('DB_NAME', getenv('MYSQL_DATABASE'));
+} elseif (getenv('DATABASE_URL')) {
+    // Fallback for other providers
     $url = parse_url(getenv('DATABASE_URL'));
     define('DB_HOST', $url['host']);
     define('DB_USER', $url['user']);
