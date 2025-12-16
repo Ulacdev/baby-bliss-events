@@ -82,7 +82,7 @@ const AppContent = () => {
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
+        <BrowserRouter basename="/baby-bliss-events">
           <ChatBot />
           <Routes>
             <Route path="/" element={<Index />} />
