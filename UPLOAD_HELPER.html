@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InfinityFree Upload Helper</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 700px;
+            width: 100%;
+            padding: 40px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        .section h2 {
+            color: #667eea;
+            font-size: 18px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        .step {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-left: 4px solid #667eea;
+            border-radius: 4px;
+        }
+        .step-number {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .step-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .step-description {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            margin: 10px 0;
+            line-height: 1.5;
+        }
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .warning-title {
+            font-weight: 600;
+            color: #856404;
+            margin-bottom: 5px;
+        }
+        .warning-text {
+            color: #856404;
+            font-size: 14px;
+        }
+        .success-box {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        .success-title {
+            font-weight: 600;
+            color: #155724;
+            margin-bottom: 5px;
+        }
+        .success-text {
+            color: #155724;
+            font-size: 14px;
+        }
+        .file-list {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        .file-item {
+            padding: 8px;
+            color: #333;
+            font-size: 14px;
+            font-family: monospace;
+            border-bottom: 1px solid #eee;
+        }
+        .file-item:last-child {
+            border-bottom: none;
+        }
+        .button {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+        .button:hover {
+            background: #764ba2;
+        }
+        .test-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .test-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Baby Bliss API Upload Helper</h1>
+        <p class="subtitle">Step-by-step guide to upload your API files to InfinityFree</p>
+
+        <div class="warning">
+            <div class="warning-title">⚠️ Important</div>
+            <div class="warning-text">
+                Make sure you have prepared all files using <strong>prepare_upload.bat</strong> script first.
+                Files are located in: <code>api_upload_staging/</code>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📋 Files to Upload (20 total)</h2>
+            <div class="file-list">
+                <div class="file-item">✓ config.php</div>
+                <div class="file-item">✓ auth.php</div>
+                <div class="file-item">✓ index.php</div>
+                <div class="file-item">✓ test_cors.php</div>
+                <div class="file-item">✓ .htaccess</div>
+                <div class="file-item">✓ bookings.php</div>
+                <div class="file-item">✓ clients.php</div>
+                <div class="file-item">✓ users.php</div>
+                <div class="file-item">✓ settings.php</div>
+                <div class="file-item">✓ messages.php</div>
+                <div class="file-item">✓ payments.php</div>
+                <div class="file-item">✓ dashboard.php</div>
+                <div class="file-item">✓ calendar.php</div>
+                <div class="file-item">✓ financial.php</div>
+                <div class="file-item">✓ profile.php</div>
+                <div class="file-item">✓ reports.php</div>
+                <div class="file-item">✓ archive.php</div>
+                <div class="file-item">✓ audit.php</div>
+                <div class="file-item">✓ upload.php</div>
+                <div class="file-item">✓ public_events.php</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📤 Upload Steps</h2>
+            
+            <div class="step">
+                <span class="step-number">1</span>
+                <div class="step-title">Log into InfinityFree cPanel</div>
+                <div class="step-description">
+                    Visit: <strong>cpanel.infinityfree.com</strong><br>
+                    Use your InfinityFree email and password
+                </div>
+            </div>
+
+            <div class="step">
+                <span class="step-number">2</span>
+                <div class="step-title">Open File Manager</div>
+                <div class="step-description">
+                    Click <strong>File Manager</strong> in cPanel<br>
+                    <strong>Note the folder path</strong> at the top (public_html, htdocs, www, etc.)
+                </div>
+            </div>
+
+            <div class="step">
+                <span class="step-number">3</span>
+                <div class="step-title">Create 'api' Folder</div>
+                <div class="step-description">
+                    Right-click in empty space → <strong>Create New Folder</strong><br>
+                    Name: <code>api</code> (lowercase)<br>
+                    Press Enter
+                </div>
+            </div>
+
+            <div class="step">
+                <span class="step-number">4</span>
+                <div class="step-title">Open 'api' Folder</div>
+                <div class="step-description">
+                    Double-click the <code>api</code> folder to open it<br>
+                    Now you should be inside the api folder
+                </div>
+            </div>
+
+            <div class="step">
+                <span class="step-number">5</span>
+                <div class="step-title">Upload Files</div>
+                <div class="step-description">
+                    Click <strong>Upload</strong> button<br>
+                    Select ALL 20 files from:<br>
+                    <code>api_upload_staging/</code> folder on your computer<br>
+                    Click <strong>Open</strong> and wait for upload to complete
+                </div>
+            </div>
+
+            <div class="step">
+                <span class="step-number">6</span>
+                <div class="step-title">Verify Upload</div>
+                <div class="step-description">
+                    You should see all 20 files in the api folder<br>
+                    Files should have green checkmarks (✓)
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🧪 Test Your Upload</h2>
+            <div class="step-description">
+                After uploading, test with this link:<br><br>
+                <strong>Replace DOMAIN with your actual domain</strong><br>
+                <div class="code-block">https://babyblissbooking.great-site.net/api/test_cors.php</div>
+
+                <strong>Expected Response:</strong>
+                <div class="code-block">{
+  "status": "success",
+  "message": "API is working!",
+  ...
+}</div>
+
+                <div class="success-box">
+                    <div class="success-title">✓ If you see JSON above:</div>
+                    <div class="success-text">
+                        ✅ Your API is working!<br>
+                        ✅ Go back to Vercel and test login<br>
+                        ✅ Clear browser cache first (Ctrl+Shift+Delete)
+                    </div>
+                </div>
+
+                <div style="margin-top: 15px; padding: 15px; background: #e7f3ff; border-left: 4px solid #2196F3; border-radius: 4px;">
+                    <strong style="color: #0c5aa0;">❌ If you see 404 or blank page:</strong><br>
+                    <div style="color: #0c5aa0; font-size: 14px; margin-top: 5px;">
+                        • Check files are actually in the api folder<br>
+                        • Try uploading setup.php first to test server<br>
+                        • Contact InfinityFree support if still failing
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📞 Troubleshooting</h2>
+            <div class="step">
+                <div class="step-title">Files Won't Upload?</div>
+                <div class="step-description">
+                    • Try uploading one file at a time<br>
+                    • Check file names (use lowercase for .htaccess)<br>
+                    • Try a different browser<br>
+                    • Use FTP instead (FileZilla)
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-title">Still Getting 404?</div>
+                <div class="step-description">
+                    • Verify you created the 'api' folder correctly<br>
+                    • Files should be at: <code>/api/test_cors.php</code><br>
+                    • Not at: <code>/api/api/test_cors.php</code><br>
+                    • Check you're in the right main folder
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 2px solid #f0f0f0;">
+            <p style="color: #666; font-size: 14px;">
+                Once upload is complete and test passes,<br>
+                your API will be ready for Vercel!
+            </p>
+        </div>
+    </div>
+</body>
+</html>
