@@ -1,6 +1,7 @@
 # Quick Upload Guide - InfinityFree
 
 ## Your Database Credentials (Confirmed ✅)
+
 - **Hostname:** sql100.infinityfree.com
 - **Username:** if0_40697563
 - **Password:** nEedRr5f39Aby
@@ -11,23 +12,28 @@
 ## Option 1: Upload via cPanel File Manager (Easiest for Beginners)
 
 ### Step 1: Access cPanel
+
 1. Go to https://cpanel.infinityfree.com (or your control panel link)
 2. Log in with your InfinityFree credentials
 
 ### Step 2: Open File Manager
+
 1. Click **File Manager**
 2. Click **public_html** folder
 3. You should see a folder list
 
 ### Step 3: Create API Folder (if not exists)
+
 1. Right-click → **Create New Folder**
 2. Name: `api`
 3. Click **Create**
 
 ### Step 4: Upload PHP Files
+
 These are the **ESSENTIAL** files to upload from your local `api/` folder:
 
 **Critical files (MUST upload):**
+
 - ✅ `config.php` - Database & CORS setup
 - ✅ `auth.php` - Login/authentication
 - ✅ `index.php` - API router
@@ -35,6 +41,7 @@ These are the **ESSENTIAL** files to upload from your local `api/` folder:
 - ✅ `test_cors.php` - Diagnostic tool
 
 **Other important files (upload these too):**
+
 - `bookings.php`
 - `clients.php`
 - `messages.php`
@@ -52,6 +59,7 @@ These are the **ESSENTIAL** files to upload from your local `api/` folder:
 - `public_events.php`
 
 **Steps to upload:**
+
 1. Click into the `api/` folder
 2. Click **Upload** button
 3. Select files from your `C:\Users\John Carlo\Downloads\baby-bliss-ui-kit-main\baby-bliss-ui-kit-main\api\` folder
@@ -59,6 +67,7 @@ These are the **ESSENTIAL** files to upload from your local `api/` folder:
 5. Click **Upload**
 
 ### Step 5: Don't Upload These
+
 - ❌ `vendor/` folder (upload separately if needed, or skip)
 - ❌ `composer.json` and `composer.lock` (upload if you have Composer installed)
 - ❌ `Screenshot 2025-12-17 015504.png` (just a screenshot)
@@ -69,9 +78,11 @@ These are the **ESSENTIAL** files to upload from your local `api/` folder:
 ## Option 2: Upload via FTP (Faster for Many Files)
 
 ### Required: FTP Credentials
+
 Get these from InfinityFree cPanel → **FTP Accounts**
 
 ### Using FileZilla (Free FTP Client)
+
 1. Download: https://filezilla-project.org/
 2. File → Site Manager → New Site
 3. Fill in:
@@ -89,12 +100,15 @@ Get these from InfinityFree cPanel → **FTP Accounts**
 ## Step 6: Verify Upload (Critical!)
 
 ### Test 1: Check if Files Exist
+
 In your browser, visit:
+
 ```
 https://babyblissbooking.great-site.net/api/test_cors.php
 ```
 
 You should see:
+
 ```json
 {
   "status": "success",
@@ -105,13 +119,16 @@ You should see:
 ```
 
 **If you see:**
+
 - ✅ JSON response → **Files uploaded successfully!** ✅
 - ❌ 404 error → Files not uploaded, try again
 - ❌ Blank page → PHP error, check InfinityFree error logs
 - ❌ "Connection refused" → Server issue
 
 ### Test 2: Check Auth Endpoint
+
 If test_cors.php works, try:
+
 ```
 https://babyblissbooking.great-site.net/api/auth.php?action=session
 ```
@@ -136,6 +153,7 @@ Once files are uploaded and test_cors.php returns JSON:
 ### Problem: "Failed to fetch" still after upload
 
 **Step 1:** Check browser DevTools (F12) → Network tab
+
 - Find request to `auth.php`
 - Click it
 - Check **Status Code**:
@@ -144,11 +162,13 @@ Once files are uploaded and test_cors.php returns JSON:
   - `200` = Success (check Response body)
 
 ### Problem: 404 error on test_cors.php
+
 - Files not uploaded to right location
 - Path should be: `public_html/api/test_cors.php`
 - Use cPanel File Manager to verify files exist
 
 ### Problem: Blank page or "Internal Server Error"
+
 1. In cPanel, find **Error Logs** or **Raw Logs**
 2. Check for PHP errors
 3. Might need to enable PHP extensions (contact InfinityFree support)
@@ -172,6 +192,7 @@ Once files are uploaded and test_cors.php returns JSON:
 ## Need Help?
 
 Share screenshot of:
+
 1. cPanel File Manager showing files in `api/` folder
 2. Browser tab showing test_cors.php result
 3. DevTools Console error when trying to login
