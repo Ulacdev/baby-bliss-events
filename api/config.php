@@ -8,14 +8,24 @@ if (php_sapi_name() !== 'cli') {
     header('Content-Type: application/json; charset=utf-8');
 }
 
-// CORS handling - simplified for InfinityFree compatibility
+// CORS handling - respond with specific Origin when present
 if (php_sapi_name() !== 'cli') {
-    // Always allow CORS for now (InfinityFree has restrictions)
-    header('Access-Control-Allow-Origin: *');
+    // Use the request Origin when available. Browsers will reject credentialed
+    // requests if Access-Control-Allow-Origin is '*', so echo the origin.
+    $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+
+    if ($origin) {
+        header('Access-Control-Allow-Origin: ' . $origin);
+        header('Vary: Origin');
+        header('Access-Control-Allow-Credentials: true');
+    } else {
+        // Fallback for tools or direct access
+        header('Access-Control-Allow-Origin: *');
+    }
+
     header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS, PATCH');
     header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
     header('Access-Control-Max-Age: 86400');
-    header('Access-Control-Allow-Credentials: true');
 
     // Handle preflight OPTIONS request
     if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
