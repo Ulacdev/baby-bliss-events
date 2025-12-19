@@ -5,7 +5,7 @@
   },
   "deploy": {
     "startCommand": "php -S 0.0.0.0:80 -t /var/www/html",
-    "healthcheckPath": "/test_db.php",
+    "healthcheckPath": "/health.php",
     "healthcheckTimeout": 300,
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10
