@@ -1,6 +1,6 @@
 
 // Custom API client to replace Supabase
-const API_BASE_URL = '/api';
+const API_BASE_URL = 'https://babyblisssystem.great-site.net/api';
 
 interface AuthResponse {
   user: {
