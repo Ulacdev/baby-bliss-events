@@ -1,0 +1,14 @@
+{
+    "name": "baby-bliss/api",
+    "description": "Baby Bliss API",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Baby Bliss",
+            "email": "admin@babybliss.com"
+        }
+    ],
+    "require": {
+        "phpmailer/phpmailer": "^7.0"
+    }
+}
