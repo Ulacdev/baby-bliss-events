@@ -1,5 +1,12 @@
 services:
   - type: web
+    name: baby-bliss-frontend
+    runtime: static
+    rootDir: dist
+    buildCommand: npm install && npm run build
+    staticPublishPath: .
+
+  - type: web
     name: baby-bliss-backend
     runtime: php
     rootDir: api
