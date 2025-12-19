@@ -18,10 +18,10 @@ if (php_sapi_name() !== 'cli') {
 }
 
 // Database configuration
-define('DB_HOST', 'sql209.infinityfree.com');
-define('DB_USER', 'if0_40717225');
-define('DB_PASS', 'sKFaVJ2a6LFWcNT');
-define('DB_NAME', 'if0_40717225_baby_bliss');
+define('DB_HOST', getenv('MYSQLHOST') ?: 'localhost');
+define('DB_USER', getenv('MYSQLUSER') ?: 'root');
+define('DB_PASS', getenv('MYSQLPASSWORD') ?: '');
+define('DB_NAME', getenv('MYSQLDATABASE') ?: 'baby_bliss');
 
 // Create database connection
 function getDBConnection()

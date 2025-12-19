@@ -1,6 +1,6 @@
 
 // Custom API client to replace Supabase
-const API_BASE_URL = '/api';
+const API_BASE_URL = 'https://baby-bliss-backend.up.railway.app';
 
 interface AuthResponse {
   user: {
