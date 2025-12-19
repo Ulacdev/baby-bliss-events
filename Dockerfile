@@ -16,9 +16,6 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Enable Apache rewrite module
 RUN a2enmod rewrite
 
-# Configure Apache to listen on the PORT environment variable
-RUN echo "Listen \${PORT:-80}" > /etc/apache2/ports.conf
-
 # Set working directory
 WORKDIR /var/www/html
 
@@ -28,21 +25,32 @@ COPY api/ /var/www/html/
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# Create Apache virtual host config
-RUN echo '<VirtualHost *:\${PORT:-80}>\n\
+# Set proper permissions
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html
+
+# Create startup script to configure Apache at runtime
+RUN echo '#!/bin/bash\n\
+# Configure Apache to listen on the PORT environment variable\n\
+echo "Listen ${PORT:-80}" > /etc/apache2/ports.conf\n\
+\n\
+# Create virtual host config\n\
+cat > /etc/apache2/sites-available/000-default.conf << EOF\n\
+<VirtualHost *:${PORT:-80}>\n\
     DocumentRoot /var/www/html\n\
     <Directory /var/www/html>\n\
         AllowOverride All\n\
         Require all granted\n\
     </Directory>\n\
-</VirtualHost>' > /etc/apache2/sites-available/000-default.conf
-
-# Set proper permissions
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html
+</VirtualHost>\n\
+EOF\n\
+\n\
+# Start Apache\n\
+exec apache2-foreground' > /usr/local/bin/start-apache.sh \
+    && chmod +x /usr/local/bin/start-apache.sh
 
 # Expose port
 EXPOSE $PORT
 
-# Start Apache
-CMD ["apache2-foreground"]
+# Start Apache with runtime configuration
+CMD ["/usr/local/bin/start-apache.sh"]
