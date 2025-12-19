@@ -26,22 +26,7 @@ define('DB_NAME', getenv('DB_NAME') ?: getenv('MYSQLDATABASE') ?: 'baby_bliss');
 // Create database connection
 function getDBConnection()
 {
-    // First try to connect without database to create it if needed
-    $conn = new mysqli(DB_HOST, DB_USER, DB_PASS);
-
-    if ($conn->connect_error) {
-        sendResponse(['error' => 'Database connection failed: ' . $conn->connect_error], 500);
-    }
-
-    // Create database if it doesn't exist
-    $sql = "CREATE DATABASE IF NOT EXISTS `" . DB_NAME . "` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci";
-    if (!$conn->query($sql)) {
-        sendResponse(['error' => 'Failed to create database: ' . $conn->error], 500);
-    }
-
-    $conn->close();
-
-    // Now connect to the specific database
+    // Connect directly to the database (Render provides it ready)
     $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
 
     if ($conn->connect_error) {
