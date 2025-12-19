@@ -18,10 +18,10 @@ if (php_sapi_name() !== 'cli') {
 }
 
 // Database configuration
-define('DB_HOST', getenv('MYSQLHOST') ?: 'localhost');
-define('DB_USER', getenv('MYSQLUSER') ?: 'root');
-define('DB_PASS', getenv('MYSQLPASSWORD') ?: '');
-define('DB_NAME', getenv('MYSQLDATABASE') ?: 'baby_bliss');
+define('DB_HOST', getenv('DB_HOST') ?: getenv('MYSQLHOST') ?: 'localhost');
+define('DB_USER', getenv('DB_USER') ?: getenv('MYSQLUSER') ?: 'root');
+define('DB_PASS', getenv('DB_PASS') ?: getenv('MYSQLPASSWORD') ?: '');
+define('DB_NAME', getenv('DB_NAME') ?: getenv('MYSQLDATABASE') ?: 'baby_bliss');
 
 // Create database connection
 function getDBConnection()

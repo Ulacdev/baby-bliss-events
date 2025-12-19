@@ -3,14 +3,28 @@ services:
     name: baby-bliss-backend
     runtime: php
     rootDir: api
-    buildCommand: composer install
-    startCommand: php -S 0.0.0.0:$PORT index.php
+    buildCommand: composer install --no-dev --optimize-autoloader
+    startCommand: php -S 0.0.0.0:$PORT
     envVars:
       - key: DB_HOST
-        value: # Set your MySQL host
+        fromDatabase:
+          name: baby-bliss-db
+          property: host
       - key: DB_USER
-        value: # Set your MySQL user
+        fromDatabase:
+          name: baby-bliss-db
+          property: username
       - key: DB_PASS
-        value: # Set your MySQL password
+        fromDatabase:
+          name: baby-bliss-db
+          property: password
       - key: DB_NAME
-        value: # Set your MySQL database name
+        fromDatabase:
+          name: baby-bliss-db
+          property: database
+
+  - type: pserv
+    name: baby-bliss-db
+    runtime: mysql
+    databaseName: baby_bliss
+    user: baby_bliss_user
