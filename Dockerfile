@@ -50,8 +50,8 @@ RUN echo 'server {\
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html
 
-# Expose port 80
-EXPOSE 80
+# Expose port
+EXPOSE $PORT
 
-# Start PHP-FPM and Nginx
-CMD php -S 0.0.0.0:80 -t /var/www/html
+# Start PHP built-in server
+CMD php -S 0.0.0.0:${PORT:-80} -t /var/www/html
