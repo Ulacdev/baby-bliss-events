@@ -1,12 +1,12 @@
 
 // Custom API client to replace Supabase
-// Use environment variable or fallback to production URL
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://babyblissbooking.great-site.net/api';
+const API_BASE_URL = '/api';
 
 interface AuthResponse {
   user: {
     id: string;
     email: string;
+    role?: string;
   };
   session: {
     access_token: string;
@@ -19,7 +19,7 @@ interface Booking {
   client_id?: number;
   first_name: string;
   last_name: string;
-  email: string; 
+  email: string;
   phone?: string;
   event_date: string;
   guests?: number;
@@ -56,8 +56,6 @@ class ApiClient {
       const response = await fetch(url, {
         ...options,
         headers,
-        mode: 'cors', // Explicitly enable CORS
-        credentials: 'include', // Include credentials if needed
       });
 
       console.log('API Response status:', response.status);
@@ -90,19 +88,6 @@ class ApiClient {
         throw new Error('Invalid response format from server');
       }
     } catch (error) {
-      // Provide better error messaging for CORS and network issues
-      if (error instanceof TypeError) {
-        const message = (error as Error).message;
-        if (message.includes('Failed to fetch')) {
-          console.error('CORS Error or Network Error:', {
-            url,
-            apiUrl: API_BASE_URL,
-            error: error,
-            hint: 'Check if API server is running and CORS is properly configured'
-          });
-          throw new Error(`Failed to connect to API at ${API_BASE_URL}. CORS or network issue. Check console for details.`);
-        }
-      }
       console.error('API Request failed:', error);
       throw error;
     }
@@ -141,7 +126,7 @@ class ApiClient {
     }
   }
 
-  async forgotPassword(email: string): Promise<{ message: string }> {
+  async forgotPassword(email: string): Promise<{ message: string; reset_link?: string }> {
     return this.request('/auth.php?action=forgot_password', {
       method: 'POST',
       body: JSON.stringify({ email }),
@@ -853,6 +838,38 @@ class ApiClient {
       throw error;
     }
   }
+
+  // Convenience methods for REST operations
+  async get(endpoint: string): Promise<any> {
+    return this.request(endpoint, { method: 'GET' });
+  }
+
+  async post(endpoint: string, data?: any): Promise<any> {
+    return this.request(endpoint, {
+      method: 'POST',
+      body: data ? JSON.stringify(data) : undefined,
+    });
+  }
+
+  async patch(endpoint: string, data?: any): Promise<any> {
+    return this.request(endpoint, {
+      method: 'PATCH',
+      body: data ? JSON.stringify(data) : undefined,
+    });
+  }
+
+  async put(endpoint: string, data?: any): Promise<any> {
+    return this.request(endpoint, {
+      method: 'PUT',
+      body: data ? JSON.stringify(data) : undefined,
+    });
+  }
+
+  async delete(endpoint: string): Promise<any> {
+    return this.request(endpoint, { method: 'DELETE' });
+  }
+
+
 }
 
 export const api = new ApiClient();

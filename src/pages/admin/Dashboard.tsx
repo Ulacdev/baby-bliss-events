@@ -3,120 +3,151 @@ import AdminHeader from "@/components/AdminHeader";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { CalendarDays, Users, CheckCircle, XCircle, TrendingUp, BarChart3, PieChart, Activity, ArrowUpIcon, ArrowDownIcon, Plus, ChevronRight, Calendar, Wallet, Filter } from "lucide-react";
+import { CalendarDays, Users, CheckCircle, XCircle, TrendingUp, Activity, Plus, ExternalLink, Clock, DollarSign, ArrowUpIcon, ArrowDownIcon, BarChart3, PieChart } from "lucide-react";
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart as RechartsPieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { api } from "@/integrations/api/client";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useSidebar } from "@/hooks/use-sidebar";
 import { useTheme } from "@/contexts/ThemeContext";
 
 const Dashboard = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const { isCollapsed: sidebarCollapsed, toggleSidebar } = useSidebar();
   const { theme } = useTheme();
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [monthFilter, setMonthFilter] = useState<string>('');
 
   useEffect(() => {
     loadDashboardStats();
+
+    // Auto-refresh every 30 seconds for real-time updates
+    const interval = setInterval(() => {
+      loadDashboardStats();
+    }, 30000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const loadDashboardStats = async () => {
     try {
       const response = await api.getDashboardStats();
+      console.log("Dashboard API Response:", response);
       setStats(response.stats);
     } catch (error) {
       console.error("Failed to load dashboard stats:", error);
-      // Set default stats for demo
       setStats({
-        total_bookings: 123,
-        pending_bookings: 15,
-        confirmed_bookings: 98,
-        cancelled_bookings: 10,
-        monthly_bookings: 8,
-        upcoming_events: 12,
-        estimated_revenue: 15600,
-        recent_bookings: []
+        total_bookings: 0,
+        pending_bookings: 0,
+        confirmed_bookings: 0,
+        cancelled_bookings: 0,
+        monthly_bookings: 0,
+        upcoming_events: 0,
+        estimated_revenue: 0,
+        total_paid_clients: 0,
+        recent_bookings: [],
+        monthly_trends: [],
+        status_distribution: []
       });
     } finally {
       setLoading(false);
     }
   };
 
-  const StatCard = ({ title, value, change, changeType, description, icon: Icon, color, bgColor }: any) => (
-    <Card className={`relative overflow-hidden transition-all border-0 shadow-cyber-ocean hover:neon-glow-blue ${theme === 'dark' ? 'shadow-gray-900/10' : ''}`}>
-      <div className={`absolute top-0 right-0 w-16 h-16 ${bgColor} rounded-bl-3xl opacity-15`}></div>
-      <div className={`absolute inset-0 bg-gradient-to-br ${theme === 'dark' ? 'from-gray-800/20 via-transparent to-gray-900/10' : 'from-white/20 via-transparent to-blue-50/10'} rounded-lg`}></div>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-        <CardTitle className={`text-sm font-semibold font-admin-premium tracking-tight ${theme === 'dark' ? 'text-gray-300' : 'text-slate-600'}`}>{title}</CardTitle>
-        <div className={`p-3 rounded-xl ${bgColor} shadow-lg backdrop-blur-sm border border-white/20`}>
-          <Icon className={`h-6 w-6 ${color}`} />
-        </div>
-      </CardHeader>
-      <CardContent className="relative z-10">
-        <div className={`text-4xl font-bold mb-2 font-admin-premium ${theme === 'dark' ? 'text-gray-100' : 'bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent'}`}>
-          {loading ? "..." : value}
-        </div>
+  const formatCurrency = (amount: number) => {
+    return `₱${amount.toLocaleString()}`;
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
+
+  const StatCard = ({ title, value, change, changeType, description, icon: Icon, color, bgColor }: any) => {
+    // Define dark mode colors for icons
+    const getIconColor = () => {
+      if (theme === 'dark') {
+        if (color === 'text-blue-600') return 'text-blue-400';
+        if (color === 'text-green-600') return 'text-green-400';
+        if (color === 'text-yellow-600') return 'text-yellow-400';
+        return 'text-gray-400'; // fallback
+      }
+      return color;
+    };
+
+    const getBgColor = () => {
+      if (theme === 'dark') {
+        if (bgColor === 'bg-blue-50') return 'bg-blue-900/30';
+        if (bgColor === 'bg-green-50') return 'bg-green-900/30';
+        if (bgColor === 'bg-yellow-50') return 'bg-yellow-900/30';
+        return 'bg-gray-800'; // fallback
+      }
+      return bgColor;
+    };
+
+    return (
+      <Card className={`border-0 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${theme === 'dark' ? 'bg-gray-800 shadow-gray-900/20 border border-gray-700' : 'bg-white shadow-sm border border-gray-100'}`}>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 pt-6">
+          <CardTitle className={`text-xs font-semibold uppercase tracking-wider ${theme === 'dark' ? 'text-white' : 'text-gray-500'}`}>{title}</CardTitle>
+          <div className={`p-3 rounded-lg ${getBgColor()} shadow-md`}>
+            <Icon className={`h-5 w-5 ${getIconColor()}`} />
+          </div>
+        </CardHeader>
+      <CardContent>
+        <div className={`text-4xl font-bold mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{loading ? "..." : value}</div>
         {change && (
-          <div className={`flex items-center text-sm font-medium ${changeType === 'positive' ? 'text-emerald-600' : 'text-red-600'}`}>
-            {changeType === 'positive' ? <ArrowUpIcon className="h-3 w-3 mr-1" /> : <ArrowDownIcon className="h-3 w-3 mr-1" />}
+          <div className={`flex items-center text-sm font-medium ${changeType === 'positive' ? 'text-emerald-400' : 'text-amber-400'}`}>
+            {changeType === 'positive' ? <ArrowUpIcon className="h-4 w-4 mr-1" /> : <ArrowDownIcon className="h-4 w-4 mr-1" />}
             {change}
+            <span className={`ml-2 ${theme === 'dark' ? 'text-white' : 'text-gray-600'}`}>vs last month</span>
           </div>
         )}
-        <p className={`text-xs mt-2 font-admin-premium tracking-wide ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>{description}</p>
+        <p className={`text-sm mt-3 ${theme === 'dark' ? 'text-white' : 'text-gray-600'}`}>{description}</p>
       </CardContent>
     </Card>
-  );
+    );
+  };
 
   return (
     <ProtectedRoute>
-      <div className={`flex min-h-screen font-admin-premium ${theme === 'dark' ? 'bg-gray-900' : 'bg-white'}`}>
+      <div className={`flex min-h-screen ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'}`}>
         <AdminSidebar isCollapsed={sidebarCollapsed} />
 
         <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'md:ml-16' : 'md:ml-64'}`}>
           <AdminHeader onToggleSidebar={toggleSidebar} isSidebarCollapsed={sidebarCollapsed} />
 
-          <main className="flex-1 p-6 lg:p-8">
+          <main className="flex-1 p-8">
             {/* Header */}
             <div className="mb-8">
               <div className="flex items-center justify-between">
                 <div>
-                  <h1 className={`text-3xl font-bold mb-2 ${theme === 'dark' ? 'text-gray-100' : 'text-gray-900'}`}>Dashboard Overview</h1>
-                  <p className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>Monitor your business performance and analytics</p>
+                  <h1 className={`text-3xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Dashboard</h1>
+                  <p className={`mt-1 ${theme === 'dark' ? 'text-white' : 'text-gray-600'}`}>Welcome to Baby Bliss Events Management</p>
                 </div>
-                <div className={`flex items-center space-x-2 text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                <div className={`flex items-center gap-2 text-sm ${theme === 'dark' ? 'text-white' : 'text-gray-500'}`}>
                   <Activity className="h-4 w-4" />
-                  <span>Last updated: {new Date().toLocaleTimeString()}</span>
+                  Last updated: {new Date().toLocaleTimeString()}
                 </div>
               </div>
             </div>
 
-            {/* KPI Cards */}
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+            {/* Stats Cards Grid */}
+            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4 mb-8">
               <StatCard
                 title="Total Bookings"
                 value={stats?.total_bookings || 0}
                 change="+12.5%"
                 changeType="positive"
                 description="All time bookings"
-                icon={CalendarDays}
+                icon={Users}
                 color="text-blue-600"
                 bgColor="bg-blue-50"
-              />
-              <StatCard
-                title="Pending Bookings"
-                value={stats?.pending_bookings || 0}
-                change="+8.2%"
-                changeType="positive"
-                description="Awaiting confirmation"
-                icon={Users}
-                color="text-yellow-600"
-                bgColor="bg-yellow-50"
               />
               <StatCard
                 title="Confirmed Bookings"
@@ -125,67 +156,41 @@ const Dashboard = () => {
                 changeType="positive"
                 description="Confirmed events"
                 icon={CheckCircle}
-                color="text-cyan-700"
-                bgColor="bg-cyan-50"
+                color="text-green-600"
+                bgColor="bg-green-50"
+              />
+              <StatCard
+                title="Pending Bookings"
+                value={stats?.pending_bookings || 0}
+                change="-8.2%"
+                changeType="negative"
+                description="Awaiting confirmation"
+                icon={Clock}
+                color="text-yellow-600"
+                bgColor="bg-yellow-50"
               />
               <StatCard
                 title="Monthly Revenue"
-                value={`₱${(stats?.estimated_revenue || 0).toLocaleString()}`}
+                value={formatCurrency(stats?.estimated_revenue || 0)}
                 change="+22.1%"
                 changeType="positive"
                 description="This month's earnings"
-                icon={Wallet}
-                color="text-emerald-600"
-                bgColor="bg-emerald-50"
+                icon={BarChart3}
+                color="text-green-600"
+                bgColor="bg-green-50"
               />
             </div>
 
-            {/* Charts Section */}
-            <div className="grid gap-6 lg:grid-cols-2 mb-8">
-              {/* Monthly Bookings Chart */}
-              <Card className={`border shadow-lg transition-all duration-200 ${theme === 'dark' ? 'border-gray-700 bg-gray-800 shadow-gray-900/10 hover:shadow-gray-900/20' : 'border-blue-200 bg-white shadow-blue-500/10 hover:shadow-blue-500/20'}`}>
+            {/* Main Content Grid - Equal Size Boxes */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+              {/* Booking Status Distribution - Now First */}
+              <Card className={`border hover:shadow-xl transition-all duration-200 ${theme === 'dark' ? 'border-gray-700 bg-gray-800 hover:border-gray-600 shadow-gray-900/20' : 'border-blue-200 bg-white hover:border-blue-300'}`}>
                 <CardHeader>
-                  <CardTitle className={`flex items-center gap-2 ${theme === 'dark' ? 'text-gray-100' : 'text-gray-900'}`}>
-                    <BarChart3 className="h-5 w-5 text-blue-500" />
-                    Monthly Bookings Trend
-                  </CardTitle>
-                  <CardDescription className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>Booking volume over the last 6 months</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <AreaChart data={stats?.monthly_trends || []}>
-                      <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                      <XAxis dataKey="month" className="text-xs" />
-                      <YAxis className="text-xs" />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: 'white',
-                          border: 'none',
-                          borderRadius: '8px',
-                          boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
-                        }}
-                      />
-                      <Area
-                        type="monotone"
-                        dataKey="bookings"
-                        stroke="#0077B6"
-                        fill="#0077B6"
-                        fillOpacity={0.1}
-                        strokeWidth={2}
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-
-              {/* Booking Status Distribution */}
-              <Card className={`border shadow-lg transition-all duration-200 ${theme === 'dark' ? 'border-gray-700 bg-gray-800 shadow-gray-900/10 hover:shadow-gray-900/20' : 'border-blue-200 bg-white shadow-blue-500/10 hover:shadow-blue-500/20'}`}>
-                <CardHeader>
-                  <CardTitle className={`flex items-center gap-2 ${theme === 'dark' ? 'text-gray-100' : 'text-gray-900'}`}>
+                  <CardTitle className={`flex items-center gap-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
                     <PieChart className="h-5 w-5 text-blue-500" />
-                    Booking Status Distribution
+                    Booking Status
                   </CardTitle>
-                  <CardDescription className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>Current booking status breakdown</CardDescription>
+                  <CardDescription className={theme === 'dark' ? 'text-white' : 'text-gray-600'}>Current booking status breakdown</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={300}>
@@ -209,44 +214,174 @@ const Dashboard = () => {
                   </ResponsiveContainer>
                 </CardContent>
               </Card>
+
+              {/* Recent Activity - Now Second */}
+              <Card className={`border hover:shadow-xl transition-all duration-200 ${theme === 'dark' ? 'border-gray-700 bg-gray-800 hover:border-gray-600 shadow-gray-900/20' : 'border-blue-200 bg-white hover:border-blue-300'}`}>
+                <CardHeader className={`border-b ${theme === 'dark' ? 'border-gray-700' : 'border-blue-200'}`}>
+                  <CardTitle className={`text-lg font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Recent Activity</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                  {loading ? (
+                    <div className="p-5 text-center text-gray-500">Loading...</div>
+                  ) : stats?.recent_bookings?.length > 0 ? (
+                    <div className="divide-y divide-gray-200 max-h-[332px] overflow-y-auto">
+                      {stats.recent_bookings.map((booking: any, index: number) => (
+                        <div key={index} className="p-5 hover:bg-blue-100 transition-colors duration-150">
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <p className="text-sm font-semibold text-gray-900 mb-1">
+                                {booking.first_name} {booking.last_name}
+                              </p>
+                              <p className="text-xs text-gray-600">
+                                Event on {formatDate(booking.event_date)}
+                              </p>
+                            </div>
+                            <Badge
+                              className={`text-xs px-3 py-1 font-medium rounded-[5px] ${
+                                booking.status === 'confirmed'
+                                  ? 'bg-blue-600 text-white hover:bg-blue-700'
+                                  : booking.status === 'pending'
+                                  ? 'bg-orange-500 text-white hover:bg-orange-600'
+                                  : 'bg-red-500 text-white hover:bg-red-600'
+                              }`}
+                            >
+                              {booking.status}
+                            </Badge>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-5 text-center text-gray-500">
+                      No recent bookings found
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </div>
 
-            {/* Revenue Chart */}
-            <Card className={`border shadow-lg transition-all duration-200 mb-8 ${theme === 'dark' ? 'border-gray-700 bg-gray-800 shadow-gray-900/10 hover:shadow-gray-900/20' : 'border-blue-200 bg-white shadow-blue-500/10 hover:shadow-blue-500/20'}`}>
-              <CardHeader>
-                <CardTitle className={`flex items-center gap-2 ${theme === 'dark' ? 'text-gray-100' : 'text-gray-900'}`}>
-                  <TrendingUp className="h-5 w-5 text-blue-500" />
-                  Revenue Analytics
-                </CardTitle>
-                <CardDescription className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>Monthly revenue trends and projections</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={stats?.monthly_trends || []}>
-                    <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                    <XAxis dataKey="month" className="text-xs" />
-                    <YAxis className="text-xs" />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: 'white',
-                        border: 'none',
-                        borderRadius: '8px',
-                        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
-                      }}
-                      formatter={(value) => [`₱${value.toLocaleString()}`, 'Revenue']}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="revenue"
-                      stroke="#0077B6"
-                      strokeWidth={3}
-                      dot={{ fill: '#0077B6', strokeWidth: 2, r: 6 }}
-                      activeDot={{ r: 8, stroke: '#0077B6', strokeWidth: 2 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
+            {/* Monthly Revenue & Quick Actions Side by Side */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+              {/* Monthly Revenue Chart - Takes 2/3 of the space */}
+              <div className="lg:col-span-2">
+                <Card className={`border hover:shadow-lg transition-all duration-200 ${theme === 'dark' ? 'border-gray-700 bg-gray-800 hover:border-gray-600 shadow-gray-900/20' : 'border-gray-200 bg-white hover:border-gray-300 shadow-sm'} h-full`}>
+                  <CardHeader className={`border-b ${theme === 'dark' ? 'border-gray-700 bg-gray-800/50' : 'border-gray-200 bg-gray-50/50'}`}>
+                    <CardTitle className={`flex items-center gap-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'} text-lg`}>
+                      <BarChart3 className="h-5 w-5 text-blue-600" />
+                      Revenue
+                    </CardTitle>
+                    <CardDescription className={theme === 'dark' ? 'text-white' : 'text-gray-600'}>Last 12 months</CardDescription>
+                  </CardHeader>
+                <CardContent className="p-6">
+                  <ResponsiveContainer width="100%" height={350}>
+                    <AreaChart data={stats?.monthly_trends || []} margin={{ top: 20, right: 30, left: 20, bottom: 40 }}>
+                      <defs>
+                        <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#007cba" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="#007cba" stopOpacity={0.05}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e1e5e9" opacity={0.5} />
+                      <XAxis
+                        dataKey="month"
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fontSize: 10, fill: '#666' }}
+                        angle={-60}
+                        textAnchor="end"
+                        height={70}
+                        interval={0}
+                      />
+                      <YAxis
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fontSize: 12, fill: '#666' }}
+                        tickFormatter={(value) => `₱${(value / 1000).toFixed(0)}k`}
+                        width={60}
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: '#fff',
+                          border: '1px solid #ddd',
+                          borderRadius: '4px',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                          fontSize: '12px'
+                        }}
+                        formatter={(value) => [`₱${value.toLocaleString()}`, 'Revenue']}
+                        labelStyle={{ color: '#333', fontWeight: 'bold' }}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="revenue"
+                        stroke="#007cba"
+                        strokeWidth={2}
+                        fill="url(#revenueGradient)"
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+              </div>
+
+              {/* Quick Actions - Takes 1/3 of the space */}
+              <div className="lg:col-span-1">
+                <Card className={`border-0 cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${theme === 'dark' ? 'bg-gray-800 shadow-gray-900/20 border border-gray-700 hover:border-gray-600 hover:bg-gray-700/30' : 'bg-white shadow-sm border border-gray-100 hover:border-blue-200 hover:bg-blue-50/30'} h-full`}>
+                  <CardContent className="p-6">
+                    <h3 className={`font-semibold text-base mb-4 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Quick Actions</h3>
+                  <div className="space-y-3">
+                    <Button
+                      className={`w-full justify-start h-12 ${theme === 'dark' ? 'bg-blue-900/30 hover:bg-blue-900/50 border-blue-800 text-blue-300 hover:text-blue-200' : 'bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700 hover:text-blue-800'}`}
+                      variant="outline"
+                      onClick={() => navigate('/admin/bookings')}
+                    >
+                      <Plus className="h-5 w-5 mr-3" />
+                      New Booking
+                    </Button>
+                    <Button
+                      className={`w-full justify-start h-12 ${theme === 'dark' ? 'bg-green-900/30 hover:bg-green-900/50 border-green-800 text-green-300 hover:text-green-200' : 'bg-green-50 hover:bg-green-100 border-green-200 text-green-700 hover:text-green-800'}`}
+                      variant="outline"
+                      onClick={() => navigate('/admin/clients')}
+                    >
+                      <Users className="h-5 w-5 mr-3" />
+                      Add Client
+                    </Button>
+                    <Button
+                      className={`w-full justify-start h-12 ${theme === 'dark' ? 'bg-purple-900/30 hover:bg-purple-900/50 border-purple-800 text-purple-300 hover:text-purple-200' : 'bg-purple-50 hover:bg-purple-100 border-purple-200 text-purple-700 hover:text-purple-800'}`}
+                      variant="outline"
+                      onClick={() => navigate('/admin/calendar')}
+                    >
+                      <CalendarDays className="h-5 w-5 mr-3" />
+                      View Calendar
+                    </Button>
+                    <Button
+                      className={`w-full justify-start h-12 ${theme === 'dark' ? 'bg-emerald-900/30 hover:bg-emerald-900/50 border-emerald-800 text-emerald-300 hover:text-emerald-200' : 'bg-emerald-50 hover:bg-emerald-100 border-emerald-200 text-emerald-700 hover:text-emerald-800'}`}
+                      variant="outline"
+                      onClick={() => navigate('/admin/messages')}
+                    >
+                      <CheckCircle className="h-5 w-5 mr-3" />
+                      View Messages
+                    </Button>
+                    <Button
+                      className={`w-full justify-start h-12 ${theme === 'dark' ? 'bg-orange-900/30 hover:bg-orange-900/50 border-orange-800 text-orange-300 hover:text-orange-200' : 'bg-orange-50 hover:bg-orange-100 border-orange-200 text-orange-700 hover:text-orange-800'}`}
+                      variant="outline"
+                      onClick={() => navigate('/admin/reports')}
+                    >
+                      <TrendingUp className="h-5 w-5 mr-3" />
+                      View Reports
+                    </Button>
+                    <Button
+                      className={`w-full justify-start h-12 ${theme === 'dark' ? 'bg-gray-800 hover:bg-gray-700 border-gray-600 text-gray-300 hover:text-gray-200' : 'bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-700 hover:text-gray-800'}`}
+                      variant="outline"
+                      onClick={() => navigate('/admin/settings')}
+                    >
+                      <Activity className="h-5 w-5 mr-3" />
+                      System Settings
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+              </div>
+            </div>
           </main>
         </div>
       </div>

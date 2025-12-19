@@ -41,12 +41,25 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      await api.signInWithPassword(loginEmail, loginPassword);
+      const response = await api.signInWithPassword(loginEmail, loginPassword);
+      
+      // Store user role for later use
+      if (response.user?.role) {
+        localStorage.setItem('user_role', response.user.role);
+      }
+
       toast({
         title: "Welcome back!",
         description: "You've successfully logged in.",
       });
-      navigate("/admin");
+
+      // Redirect based on user role
+      const userRole = response.user?.role || 'client';
+      if (userRole === 'admin') {
+        navigate("/admin");
+      } else {
+        navigate("/");
+      }
     } catch (error) {
       toast({
         variant: "destructive",

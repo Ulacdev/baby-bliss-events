@@ -16,7 +16,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 
 const Settings = () => {
   const { toast } = useToast();
-  const { isCollapsed: sidebarCollapsed, toggleSidebar } = useSidebar();
+  const { isCollapsed: sidebarCollapsed, toggleSidebar, marginClass } = useSidebar();
   const { theme } = useTheme();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -154,7 +154,7 @@ const Settings = () => {
       <ProtectedRoute>
         <div className="flex min-h-screen bg-background">
           <AdminSidebar isCollapsed={sidebarCollapsed} />
-          <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'md:ml-16' : 'md:ml-64'}`}>
+          <div className={`flex-1 flex flex-col transition-all duration-300 ${marginClass}`}>
             <AdminHeader onToggleSidebar={toggleSidebar} isSidebarCollapsed={sidebarCollapsed} />
             <main className="flex-1 flex items-center justify-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -168,10 +168,10 @@ const Settings = () => {
 
   return (
     <ProtectedRoute>
-      <div className={`flex min-h-screen font-admin-premium ${theme === 'dark' ? 'bg-gray-900' : 'bg-white'}`}>
+      <div className={`flex min-h-screen font-admin-premium ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'}`}>
         <AdminSidebar isCollapsed={sidebarCollapsed} />
 
-        <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'md:ml-16' : 'md:ml-64'}`}>
+        <div className={`flex-1 flex flex-col transition-all duration-300 ${marginClass}`}>
           <AdminHeader onToggleSidebar={toggleSidebar} isSidebarCollapsed={sidebarCollapsed} />
 
           <main className="flex-1 flex flex-col h-[calc(100vh-4rem)]">

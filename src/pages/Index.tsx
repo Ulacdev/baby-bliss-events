@@ -68,12 +68,7 @@ const Index = () => {
     loadData();
   }, []);
 
-  // Force light mode for landing page
-  useEffect(() => {
-    const root = window.document.documentElement;
-    root.classList.remove('dark');
-    root.classList.add('light');
-  }, []);
+  
 
   useEffect(() => {
     let lastScrollY = window.scrollY;

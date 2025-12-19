@@ -1,4 +1,12 @@
 <?php
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
+
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    exit(0);
+}
+
 require_once 'config.php';
 require_once 'email_config.php';
 
@@ -245,6 +253,7 @@ Phone: (555) 123-4567";
 
 function getBookings()
 {
+    global $user; // Access the authenticated user
     $conn = getDBConnection();
     $search = $_GET['search'] ?? '';
     $status = $_GET['status'] ?? '';
@@ -253,6 +262,7 @@ function getBookings()
     $where = [];
     $params = [];
     $types = '';
+
 
     if ($search) {
         $where[] = "(first_name LIKE ? OR last_name LIKE ? OR email LIKE ? OR venue LIKE ?)";

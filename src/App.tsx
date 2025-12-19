@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { api } from "@/integrations/api/client";
 import ChatBot from "@/components/ChatBot";
 import LoadingScreen from "@/components/LoadingScreen";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import { LoadingProvider, useLoading } from "@/contexts/LoadingContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import Index from "./pages/Index";
@@ -82,7 +83,7 @@ const AppContent = () => {
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter basename="/baby-bliss-events">
+        <BrowserRouter>
           <ChatBot />
           <Routes>
             <Route path="/" element={<Index />} />

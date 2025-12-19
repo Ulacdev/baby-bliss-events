@@ -21,7 +21,7 @@ import { FileText } from "lucide-react";
 
 const Bookings = () => {
   const { toast } = useToast();
-  const { isCollapsed: sidebarCollapsed, toggleSidebar } = useSidebar();
+  const { isCollapsed: sidebarCollapsed, toggleSidebar, marginClass } = useSidebar();
   const { theme } = useTheme();
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -55,6 +55,9 @@ const Bookings = () => {
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [uploadingImages, setUploadingImages] = useState(false);
+
+  // Update loading state
+  const [updatingBooking, setUpdatingBooking] = useState(false);
 
   useEffect(() => {
     loadBookings();
@@ -204,7 +207,9 @@ const Bookings = () => {
       });
       return;
     }
-
+  
+    setUpdatingBooking(true);
+  
     try {
       let imageUrlsJson = selectedBooking.images || "";
       if (selectedImages.length > 0) {
@@ -294,8 +299,10 @@ const Bookings = () => {
 
   const getStatusColor = (status: string) => {
     return status === "confirmed"
-      ? "bg-primary/10 text-primary"
-      : "bg-secondary/30 text-secondary-foreground";
+      ? "bg-blue-600 text-white hover:bg-blue-700"
+      : status === "pending"
+      ? "bg-orange-500 text-white hover:bg-orange-600"
+      : "bg-red-500 text-white hover:bg-red-600";
   };
 
   const filteredBookings = bookings.filter(booking => {
@@ -480,10 +487,10 @@ const Bookings = () => {
 
   return (
     <ProtectedRoute>
-      <div className={`flex min-h-screen font-admin-premium ${theme === 'dark' ? 'bg-gray-900' : 'bg-white'}`}>
-        <AdminSidebar isCollapsed={sidebarCollapsed} />
+      <div className={`flex min-h-screen font-admin-premium ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'}`}>
+        <AdminSidebar isCollapsed={sidebarCollapsed} onToggleSidebar={toggleSidebar} />
 
-        <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'md:ml-16' : 'md:ml-64'}`}>
+        <div className={`flex-1 flex flex-col transition-all duration-300 ${marginClass}`}>
           <AdminHeader onToggleSidebar={toggleSidebar} isSidebarCollapsed={sidebarCollapsed} />
 
           <main className="flex-1 p-6 lg:p-8 pb-0">
@@ -826,35 +833,40 @@ const Bookings = () => {
                             </div>
                           </td>
                           <td className={`py-4 px-6 text-center border-r print:hidden ${theme === 'dark' ? 'border-gray-700' : 'border-gray-100'}`}>
-                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(booking.status)}`}>
+                            <span className={`px-3 py-1 rounded-[5px] text-sm font-medium ${getStatusColor(booking.status)}`}>
                               {booking.status}
                             </span>
                           </td>
                           <td className="py-4 px-6 text-center print:hidden">
-                            <ActionMenu
-                              items={[
-                                {
-                                  id: 'view',
-                                  label: 'View',
-                                  icon: Eye,
-                                  onClick: () => openViewDialog(booking)
-                                },
-                                {
-                                  id: 'edit',
-                                  label: 'Edit',
-                                  icon: Edit,
-                                  onClick: () => openEditDialog(booking)
-                                },
-                                {
-                                  id: 'delete',
-                                  label: 'Delete',
-                                  icon: Trash2,
-                                  onClick: () => handleDelete(booking.id),
-                                  isDelete: true,
-                                  confirmMessage: `Are you sure you want to delete the booking for ${booking.first_name} ${booking.last_name}? This action cannot be undone.`
-                                }
-                              ]}
-                            />
+                            <div className="flex items-center justify-center gap-1">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openViewDialog(booking)}
+                                className={`h-8 w-8 p-0 ${theme === 'dark' ? 'border-gray-600 hover:bg-gray-700' : ''}`}
+                                title="View Booking"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openEditDialog(booking)}
+                                className={`h-8 w-8 p-0 ${theme === 'dark' ? 'border-gray-600 hover:bg-gray-700' : ''}`}
+                                title="Edit Booking"
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDelete(booking.id)}
+                                className={`h-8 w-8 p-0 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700`}
+                                title="Delete Booking"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </td>
                         </tr>
                       ))

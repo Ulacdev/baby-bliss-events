@@ -17,12 +17,14 @@ switch ($method) {
         sendResponse(['error' => 'Method not allowed'], 405);
 }
 
-function getCalendarBookings() {
+function getCalendarBookings()
+{
+    global $user; // Access the authenticated user
     $conn = getDBConnection();
 
     // Get month/year from query parameters
-    $month = isset($_GET['month']) ? (int)$_GET['month'] : (int)date('m');
-    $year = isset($_GET['year']) ? (int)$_GET['year'] : (int)date('Y');
+    $month = isset($_GET['month']) ? (int) $_GET['month'] : (int) date('m');
+    $year = isset($_GET['year']) ? (int) $_GET['year'] : (int) date('Y');
 
     // Validate month/year
     if ($month < 1 || $month > 12 || $year < 2020 || $year > 2030) {
@@ -33,9 +35,15 @@ function getCalendarBookings() {
     $firstDay = date('Y-m-01', strtotime("$year-$month-01"));
     $lastDay = date('Y-m-t', strtotime("$year-$month-01"));
 
+    // Build query with role-based filtering
+    $whereClause = "event_date BETWEEN ? AND ?";
+    $params = [$firstDay, $lastDay];
+    $types = "ss";
+
+
     // Get bookings for the month
-    $stmt = $conn->prepare("SELECT id, first_name, last_name, event_date, status, venue, guests FROM bookings WHERE event_date BETWEEN ? AND ? ORDER BY event_date");
-    $stmt->bind_param("ss", $firstDay, $lastDay);
+    $stmt = $conn->prepare("SELECT id, first_name, last_name, event_date, status, venue, guests FROM bookings WHERE $whereClause ORDER BY event_date");
+    $stmt->bind_param($types, ...$params);
     $stmt->execute();
     $result = $stmt->get_result();
 

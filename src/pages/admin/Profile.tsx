@@ -18,12 +18,13 @@ import { useTheme } from "@/contexts/ThemeContext";
 
 const Profile = () => {
   const { toast } = useToast();
-  const { isCollapsed: sidebarCollapsed, toggleSidebar } = useSidebar();
+  const { isCollapsed: sidebarCollapsed, toggleSidebar, marginClass } = useSidebar();
   const { theme } = useTheme();
   const [loading, setLoading] = useState(false);
   const [profileData, setProfileData] = useState<any>({});
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
+  const [userRole, setUserRole] = useState<string>('admin');
 
   // Form states
   const [profileForm, setProfileForm] = useState({
@@ -47,23 +48,27 @@ const Profile = () => {
   });
 
   useEffect(() => {
-    loadProfile();
+    // Load user role first
+    const role = localStorage.getItem('user_role') || 'admin';
+    setUserRole(role);
+    loadProfile(role);
   }, []);
 
-  const loadProfile = async () => {
+  const loadProfile = async (role: string = userRole) => {
     try {
       setLoading(true);
       const response = await api.getProfile();
-      setProfileData(response.profile);
+      const profile = response.profile;
+      setProfileData(profile);
       setProfileForm({
-        first_name: response.profile.first_name || "",
-        last_name: response.profile.last_name || "",
-        email: response.profile.email || "",
-        phone: response.profile.phone || "",
-        bio: response.profile.bio || ""
+        first_name: profile.first_name || "",
+        last_name: profile.last_name || "",
+        email: profile.email || "",
+        phone: profile.phone || "",
+        bio: profile.bio || ""
       });
-      if (response.profile.profile_image) {
-        setImagePreview(response.profile.profile_image);
+      if (profile.profile_image) {
+        setImagePreview(profile.profile_image);
       }
     } catch (error) {
       console.error("Failed to load profile:", error);
@@ -113,7 +118,7 @@ const Profile = () => {
         description: "Profile updated successfully",
       });
 
-      loadProfile(); // Reload profile data
+      loadProfile(userRole); // Reload profile data
 
       // Notify header to refresh profile data
       window.dispatchEvent(new CustomEvent('profileUpdated'));
@@ -186,10 +191,10 @@ const Profile = () => {
 
   return (
     <ProtectedRoute>
-      <div className={`flex min-h-screen font-admin-premium ${theme === 'dark' ? 'bg-gray-900' : 'bg-white'}`}>
-        <AdminSidebar isCollapsed={sidebarCollapsed} />
+      <div className={`flex min-h-screen font-admin-premium ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'}`}>
+        <AdminSidebar isCollapsed={sidebarCollapsed} onToggleSidebar={toggleSidebar} />
 
-        <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'md:ml-16' : 'md:ml-64'}`}>
+        <div className={`flex-1 flex flex-col transition-all duration-300 ${marginClass}`}>
           <AdminHeader onToggleSidebar={toggleSidebar} isSidebarCollapsed={sidebarCollapsed} />
 
           <main className="flex-1 flex flex-col h-[calc(100vh-4rem)]">

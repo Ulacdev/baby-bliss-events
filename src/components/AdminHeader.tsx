@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { api, auth } from "@/integrations/api/client";
 import { useLoading } from "@/contexts/LoadingContext";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,11 +13,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, LogOut, Settings, Menu, PanelLeftClose, PanelLeftOpen, Bell, Moon, Sun, MenuIcon } from "lucide-react";
+import { ActionMenu } from "@/components/ui/ActionMenu";
+import { User, LogOut, Settings, Menu, PanelLeftClose, PanelLeftOpen, Bell, Moon, Sun, MoreVertical, Trash2, Eye, Search } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useToast } from "@/hooks/use-toast";
 
-const AdminHeader = ({ onToggleSidebar, isSidebarCollapsed }: { onToggleSidebar: () => void; isSidebarCollapsed: boolean }) => {
+const AdminHeader = ({ onToggleSidebar, isSidebarCollapsed, isSidebarHovering = false }: { onToggleSidebar: () => void; isSidebarCollapsed: boolean; isSidebarHovering?: boolean }) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { setLoading } = useLoading();
@@ -27,6 +29,189 @@ const AdminHeader = ({ onToggleSidebar, isSidebarCollapsed }: { onToggleSidebar:
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [pendingBookings, setPendingBookings] = useState(0);
   const [notifications, setNotifications] = useState<any[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+
+  // Search functionality
+  useEffect(() => {
+    const performSearch = async () => {
+      console.log('Search triggered with query:', searchQuery);
+
+      if (searchQuery.trim().length < 2) {
+        setSearchResults([]);
+        setIsSearching(false);
+        return;
+      }
+
+      setIsSearching(true);
+      console.log('Starting search...');
+
+      try {
+        const results: any[] = [];
+        const query = searchQuery.toLowerCase();
+
+        // Search messages
+        try {
+          const messagesResponse = await api.getMessages();
+          const messageResults = messagesResponse.messages
+            .filter((msg: any) =>
+              msg.name?.toLowerCase().includes(query) ||
+              msg.email?.toLowerCase().includes(query) ||
+              msg.phone?.toLowerCase().includes(query) ||
+              msg.subject?.toLowerCase().includes(query) ||
+              msg.message?.toLowerCase().includes(query) ||
+              msg.status?.toLowerCase().includes(query)
+            )
+            .slice(0, 3)
+            .map((msg: any) => ({
+              type: 'message',
+              title: `Message from ${msg.name}`,
+              subtitle: `${msg.subject || 'No subject'} • ${msg.status}`,
+              path: '/admin/messages',
+              data: msg
+            }));
+          results.push(...messageResults);
+        } catch (error) {
+          console.error('Error searching messages:', error);
+        }
+
+        // Search bookings
+        try {
+          const bookingsResponse = await api.getBookings({});
+          const bookingResults = bookingsResponse.bookings
+            .filter((booking: any) =>
+              booking.first_name?.toLowerCase().includes(query) ||
+              booking.last_name?.toLowerCase().includes(query) ||
+              booking.email?.toLowerCase().includes(query) ||
+              booking.phone?.toLowerCase().includes(query) ||
+              booking.event_title?.toLowerCase().includes(query) ||
+              booking.venue?.toLowerCase().includes(query) ||
+              booking.package?.toLowerCase().includes(query) ||
+              booking.status?.toLowerCase().includes(query) ||
+              booking.special_requests?.toLowerCase().includes(query)
+            )
+            .slice(0, 3)
+            .map((booking: any) => ({
+              type: 'booking',
+              title: `Booking: ${booking.first_name} ${booking.last_name}`,
+              subtitle: `${booking.event_title || 'No title'} • ${booking.status} • ${booking.package || 'No package'}`,
+              path: '/admin/bookings',
+              data: booking
+            }));
+          results.push(...bookingResults);
+        } catch (error) {
+          console.error('Error searching bookings:', error);
+        }
+
+        // Search clients
+        try {
+          const clientsResponse = await api.getClients();
+          const clientResults = clientsResponse.clients
+            .filter((client: any) =>
+              client.first_name?.toLowerCase().includes(query) ||
+              client.last_name?.toLowerCase().includes(query) ||
+              client.email?.toLowerCase().includes(query) ||
+              client.phone?.toLowerCase().includes(query) ||
+              client.address?.toLowerCase().includes(query) ||
+              client.notes?.toLowerCase().includes(query)
+            )
+            .slice(0, 3)
+            .map((client: any) => ({
+              type: 'client',
+              title: `Client: ${client.first_name} ${client.last_name}`,
+              subtitle: client.email,
+              path: '/admin/clients',
+              data: client
+            }));
+          results.push(...clientResults);
+        } catch (error) {
+          console.error('Error searching clients:', error);
+        }
+
+        // Search users/accounts
+        try {
+          const usersResponse = await api.getUsers();
+          const userResults = usersResponse.users
+            .filter((user: any) =>
+              user.first_name?.toLowerCase().includes(query) ||
+              user.last_name?.toLowerCase().includes(query) ||
+              user.email?.toLowerCase().includes(query) ||
+              user.phone?.toLowerCase().includes(query) ||
+              user.role?.toLowerCase().includes(query) ||
+              user.username?.toLowerCase().includes(query)
+            )
+            .slice(0, 2)
+            .map((user: any) => ({
+              type: 'user',
+              title: `${user.first_name} ${user.last_name}`,
+              subtitle: `${user.email} • ${user.role}`,
+              path: '/admin/accounts',
+              data: user
+            }));
+          results.push(...userResults);
+        } catch (error) {
+          console.error('Error searching users:', error);
+        }
+
+        // Search financial data
+        try {
+          const [paymentsRes, expensesRes] = await Promise.all([
+            api.getPayments(),
+            api.getExpenses()
+          ]);
+
+          // Search payments
+          const paymentResults = paymentsRes.payments
+            .filter((payment: any) =>
+              payment.amount?.toString().includes(query) ||
+              payment.payment_method?.toLowerCase().includes(query) ||
+              payment.payment_status?.toLowerCase().includes(query) ||
+              payment.transaction_reference?.toLowerCase().includes(query)
+            )
+            .slice(0, 2)
+            .map((payment: any) => ({
+              type: 'payment',
+              title: `Payment: ₱${payment.amount}`,
+              subtitle: `${payment.payment_method} • ${payment.payment_status}`,
+              path: '/admin/financial',
+              data: payment
+            }));
+
+          // Search expenses
+          const expenseResults = expensesRes.expenses
+            .filter((expense: any) =>
+              expense.category?.toLowerCase().includes(query) ||
+              expense.description?.toLowerCase().includes(query) ||
+              expense.amount?.toString().includes(query) ||
+              expense.payment_method?.toLowerCase().includes(query)
+            )
+            .slice(0, 2)
+            .map((expense: any) => ({
+              type: 'expense',
+              title: `Expense: ${expense.category}`,
+              subtitle: `₱${expense.amount} • ${expense.description}`,
+              path: '/admin/financial',
+              data: expense
+            }));
+
+          results.push(...paymentResults, ...expenseResults);
+        } catch (error) {
+          console.error('Error searching financial data:', error);
+        }
+
+        setSearchResults(results.slice(0, 10)); // Limit to 10 results
+      } catch (error) {
+        console.error('Search error:', error);
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    };
+
+    const debounceTimer = setTimeout(performSearch, 300); // Debounce search
+    return () => clearTimeout(debounceTimer);
+  }, [searchQuery]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -41,6 +226,7 @@ const AdminHeader = ({ onToggleSidebar, isSidebarCollapsed }: { onToggleSidebar:
           setProfileImage(profileResponse.profile.profile_image);
         }
 
+        // Load notifications for admin users
         let recentMessages: any[] = [];
         let recentBookings: any[] = [];
 
@@ -50,11 +236,15 @@ const AdminHeader = ({ onToggleSidebar, isSidebarCollapsed }: { onToggleSidebar:
           const unreadMessagesList = messagesResponse.messages.filter((m: any) => m.status === 'unread');
           setUnreadMessages(unreadMessagesList.length);
 
-          recentMessages = unreadMessagesList.slice(0, 5).map((msg: any) => ({
-            type: 'message',
-            data: msg,
-            timestamp: new Date(msg.created_at)
-          }));
+          recentMessages = messagesResponse.messages
+            .filter((msg: any) => ['unread', 'read'].includes(msg.status))
+            .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+            .slice(0, 5)
+            .map((msg: any) => ({
+              type: 'message',
+              data: msg,
+              timestamp: new Date(msg.created_at)
+            }));
         } catch (error) {
           console.error('Failed to load messages count:', error);
         }
@@ -65,18 +255,22 @@ const AdminHeader = ({ onToggleSidebar, isSidebarCollapsed }: { onToggleSidebar:
           const pendingBookingsList = bookingsResponse.bookings.filter((b: any) => b.status === 'pending');
           setPendingBookings(pendingBookingsList.length);
 
-          recentBookings = pendingBookingsList.slice(0, 5).map((booking: any) => ({
-            type: 'booking',
-            data: booking,
-            timestamp: new Date(booking.event_date)
-          }));
+          recentBookings = bookingsResponse.bookings
+            .filter((booking: any) => ['pending', 'confirmed'].includes(booking.status))
+            .sort((a: any, b: any) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime())
+            .slice(0, 5)
+            .map((booking: any) => ({
+              type: 'booking',
+              data: booking,
+              timestamp: new Date(booking.event_date)
+            }));
         } catch (error) {
           console.error('Failed to load bookings count:', error);
         }
 
         // Combine and sort notifications
         const allNotifications = [...recentMessages, ...recentBookings].sort((a, b) => b.timestamp - a.timestamp);
-        setNotifications(allNotifications.slice(0, 10)); // Show top 10
+        setNotifications(allNotifications.slice(0, 20)); // Load top 20 for scrolling
       } catch (error) {
         console.error('Failed to load header data:', error);
       }
@@ -108,7 +302,6 @@ const AdminHeader = ({ onToggleSidebar, isSidebarCollapsed }: { onToggleSidebar:
   }, []);
 
   const handleLogout = async () => {
-    setLoading(true);
     try {
       await api.signOut();
       toast({
@@ -122,8 +315,6 @@ const AdminHeader = ({ onToggleSidebar, isSidebarCollapsed }: { onToggleSidebar:
         title: "Error",
         description: "Failed to log out. Please try again.",
       });
-    } finally {
-      setTimeout(() => setLoading(false), 1000);
     }
   };
 
@@ -151,93 +342,138 @@ const AdminHeader = ({ onToggleSidebar, isSidebarCollapsed }: { onToggleSidebar:
   };
 
   return (
-    <header className={`sticky top-0 left-0 right-0 z-50 h-16 flex items-center justify-between px-4 md:px-6 lg:px-8 shadow-lg backdrop-blur-md border-b-4 transition-all duration-300 ${theme === 'dark' ? 'bg-gray-900 border-gray-700' : 'bg-blue-400 border-blue-200'} ${isSidebarCollapsed ? 'md:left-16' : 'md:left-64'}`}>
-      <div className="flex items-center space-x-2 md:space-x-4">
+    // Header spans full width; content area will shift when sidebar collapses
+    <header className={`sticky top-0 left-0 right-0 z-50 h-20 flex items-center justify-between border-b-4 bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700 transition-all duration-300 px-6 md:px-8 lg:px-12`}>
+      <div className="flex items-center space-x-3 md:space-x-4">
         <Button
           variant="ghost"
           size="sm"
           onClick={onToggleSidebar}
-          className={`hidden md:flex h-8 w-8 p-0 hover:bg-opacity-20 ${theme === 'dark' ? 'text-gray-300 hover:bg-gray-700 hover:text-white' : 'text-white hover:bg-blue-300 hover:text-blue-900'}`}
+          className="hidden md:flex h-12 w-12 p-0 ml-1 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800"
         >
-          <MenuIcon className="h-4 w-4" />
+          <Menu className="h-6 w-6" />
         </Button>
-        <h2 className={`text-sm md:text-base lg:text-lg font-semibold truncate ${theme === 'dark' ? 'text-gray-100' : 'text-white'}`}>Baby Bliss Admin</h2>
+        {/* Search for admin users */}
+        {(
+          <div className={`relative flex-1 transition-all duration-300 max-w-sm`}>
+            <div className={`flex items-center border ${theme === 'dark' ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-300'} shadow-sm`} style={{ borderRadius: '5px' }}>
+              <div className="pl-3 pr-1">
+                <Search className={`h-4 w-4 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-500'}`} />
+              </div>
+              <Input
+                type="text"
+                placeholder="Search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className={`border-0 bg-transparent px-1 py-2 text-sm focus:ring-0 focus:outline-none focus:border-transparent focus-visible:ring-0 focus-visible:ring-offset-0 ${theme === 'dark' ? 'text-white placeholder-gray-400' : 'text-gray-900 placeholder-gray-500'}`}
+              />
+              {isSearching && (
+                <div className="pr-3">
+                  <div className="animate-spin rounded-full h-3 w-3 border border-gray-400 border-t-transparent"></div>
+                </div>
+              )}
+            </div>
+
+            {/* Search Results Dropdown - WordPress Style */}
+            {searchResults.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-b-md shadow-sm max-h-80 overflow-y-auto">
+                <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+                  <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                    Search Results
+                  </span>
+                </div>
+                <div className="max-h-64 overflow-y-auto">
+                  {searchResults.map((result, index) => (
+                    <div
+                      key={index}
+                      onClick={() => {
+                        navigate(result.path);
+                        setSearchQuery('');
+                        setSearchResults([]);
+                      }}
+                      className="px-4 py-3 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-b-0 text-gray-700 dark:text-white"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${
+                          result.type === 'message' ? 'bg-blue-100 text-blue-700' :
+                          result.type === 'booking' ? 'bg-green-100 text-green-700' :
+                          result.type === 'client' ? 'bg-purple-100 text-purple-700' :
+                          result.type === 'user' ? 'bg-orange-100 text-orange-700' :
+                          'bg-gray-100 text-gray-700'
+                        }`}>
+                          {result.type === 'message' ? 'M' :
+                           result.type === 'booking' ? 'B' :
+                           result.type === 'client' ? 'C' :
+                           result.type === 'user' ? 'U' : 'F'}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{result.title}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                            {result.subtitle}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
-      <div className="flex items-center space-x-2 md:space-x-4">
-        {/* Notifications */}
-        <DropdownMenu>
+      <div className="flex items-center space-x-4 md:space-x-6">
+        {/* Notifications for admin users */}
+        <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
               size="sm"
-              className={`h-8 w-8 p-0 relative hover:bg-opacity-20 ${theme === 'dark' ? 'text-gray-300 hover:bg-gray-700 hover:text-white' : 'text-white hover:bg-blue-300 hover:text-blue-900'}`}
+              className="h-10 w-10 p-0 relative text-gray-700 dark:text-white hover:bg-gray-100 shadow-md hover:shadow-lg transition-shadow duration-200"
             >
-              <Bell className="h-4 w-4" />
+              <Bell className="h-5 w-5" />
               {(unreadMessages + pendingBookings) > 0 && (
-                <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full text-xs flex items-center justify-center text-white">
+                <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full text-xs flex items-center justify-center text-white shadow-sm">
                   {unreadMessages + pendingBookings}
                 </span>
               )}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className={`w-80 border shadow-lg ${theme === 'dark' ? 'bg-gray-800 border-gray-600' : 'bg-white border-blue-200'}`} align="end" forceMount>
+          <DropdownMenuContent className="w-80 border shadow bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600" align="end" forceMount>
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
-                <p className={`text-sm font-medium leading-none ${theme === 'dark' ? 'text-gray-100' : 'text-gray-900'}`}>Notifications</p>
+                <p className="text-sm font-medium leading-none text-gray-900 dark:text-white">Notifications</p>
+                <p className="text-xs text-gray-500 dark:text-white">
+                  {unreadMessages > 0 && `Unread Messages: ${unreadMessages}`}
+                  {unreadMessages > 0 && pendingBookings > 0 && ' | '}
+                  {pendingBookings > 0 && `Pending Bookings: ${pendingBookings}`}
+                </p>
               </div>
             </DropdownMenuLabel>
-            <DropdownMenuSeparator className={theme === 'dark' ? 'bg-gray-600' : 'bg-blue-200'} />
-            {notifications.length === 0 ? (
-              <div className={`px-3 py-2 text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                No new notifications
-              </div>
-            ) : (
-              notifications.map((notification, index) => (
-                <DropdownMenuItem
-                  key={index}
-                  onClick={() => navigate(notification.type === 'message' ? "/admin/messages" : "/admin/bookings")}
-                  className={theme === 'dark' ? 'hover:bg-gray-700 text-gray-100' : 'hover:bg-blue-50 text-gray-700'}
-                >
-                  <div className="flex items-start space-x-2 w-full">
-                    <div className={`p-1 rounded-full ${notification.type === 'message' ? 'bg-blue-100' : 'bg-orange-100'}`}>
-                      <Bell className={`h-3 w-3 ${notification.type === 'message' ? 'text-blue-600' : 'text-orange-600'}`} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">
-                        {notification.type === 'message'
-                          ? `New message from ${notification.data.name}`
-                          : `New booking from ${notification.data.first_name} ${notification.data.last_name}`
-                        }
-                      </p>
-                      <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                        {notification.timestamp.toLocaleDateString()}
-                      </p>
-                    </div>
-                  </div>
-                </DropdownMenuItem>
-              ))
-            )}
             {(unreadMessages > 0 || pendingBookings > 0) && (
               <>
-                <DropdownMenuSeparator className={theme === 'dark' ? 'bg-gray-600' : 'bg-blue-200'} />
-                <div className="px-3 py-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigate("/admin/messages")}
-                    className={`w-full mr-2 ${theme === 'dark' ? 'border-gray-600 hover:bg-gray-700' : ''}`}
-                  >
-                    View All Messages ({unreadMessages})
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigate("/admin/bookings")}
-                    className={`w-full mt-2 ${theme === 'dark' ? 'border-gray-600 hover:bg-gray-700' : ''}`}
-                  >
-                    View All Bookings ({pendingBookings})
-                  </Button>
+                <DropdownMenuSeparator className="bg-blue-200 dark:bg-gray-600" />
+                <div className="px-3 py-2 space-y-2">
+                  {unreadMessages > 0 && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate("/admin/messages")}
+                      className="w-full border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    >
+                      View Messages ({unreadMessages})
+                    </Button>
+                  )}
+                  {pendingBookings > 0 && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate("/admin/bookings")}
+                      className="w-full border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    >
+                      View Bookings ({pendingBookings})
+                    </Button>
+                  )}
                 </div>
               </>
             )}
@@ -249,47 +485,49 @@ const AdminHeader = ({ onToggleSidebar, isSidebarCollapsed }: { onToggleSidebar:
           variant="ghost"
           size="sm"
           onClick={toggleTheme}
-          className={`h-8 w-8 p-0 hover:bg-opacity-20 ${theme === 'dark' ? 'text-gray-300 hover:bg-gray-700 hover:text-white' : 'text-white hover:bg-blue-300 hover:text-blue-900'}`}
+          className="h-10 w-10 p-0 text-gray-700 dark:text-white hover:bg-gray-100 shadow-md hover:shadow-lg transition-shadow duration-200"
         >
-          {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
         </Button>
 
-        <div className={`hidden lg:flex items-center space-x-2 text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-white'}`}>
-          <span>Welcome back!</span>
-          <span className={`font-medium ${theme === 'dark' ? 'text-gray-100' : 'text-white'}`}>{getUserDisplayName()}</span>
+        <div className="items-center space-x-2 text-base text-gray-700 dark:text-white transition-all duration-300 hidden lg:flex">
+          <span>Howdy,</span>
+          <span className="font-medium">{getUserDisplayName()}</span>
         </div>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className={`relative h-10 w-10 rounded-full hover:bg-opacity-20 border ${theme === 'dark' ? 'hover:bg-gray-700 border-gray-600 hover:border-gray-500' : 'hover:bg-blue-50 border-blue-300 hover:border-blue-400'}`}>
-              <Avatar className="h-10 w-10 border-2 border-blue-400">
+            <Button variant="ghost" className="relative h-12 w-12 rounded-full border border-gray-300 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-800">
+              <Avatar className="h-12 w-12">
                 <AvatarImage src={profileImage} alt="Profile" />
-                <AvatarFallback className={`font-semibold ${theme === 'dark' ? 'bg-gray-700 text-gray-100' : 'bg-blue-100 text-blue-900'}`}>
+                <AvatarFallback className="font-semibold bg-gray-100 text-gray-900">
                   {getUserInitials()}
                 </AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className={`w-56 border shadow-lg ${theme === 'dark' ? 'bg-gray-800 border-gray-600' : 'bg-white border-blue-200'}`} align="end" forceMount>
-            <DropdownMenuLabel className="font-normal">
-              <div className="flex flex-col space-y-1">
-                <p className={`text-sm font-medium leading-none ${theme === 'dark' ? 'text-gray-100' : 'text-gray-900'}`}>Administrator</p>
-                <p className={`text-xs leading-none ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                  {session?.user?.email || ""}
-                </p>
-              </div>
-            </DropdownMenuLabel>
+          <DropdownMenuContent className={`w-56 border shadow ${theme === 'dark' ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-300'}`} align="end" forceMount>
+          <DropdownMenuLabel className="font-normal">
+            <div className="flex flex-col space-y-1">
+              <p className={`text-sm font-medium leading-none ${theme === 'dark' ? 'text-gray-100' : 'text-gray-900'}`}>
+                Administrator
+              </p>
+              <p className={`text-xs leading-none ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                {session?.user?.email || ""}
+              </p>
+            </div>
+          </DropdownMenuLabel>
             <DropdownMenuSeparator className={theme === 'dark' ? 'bg-gray-600' : 'bg-blue-200'} />
-            <DropdownMenuItem onClick={() => navigate("/admin/profile")} className={theme === 'dark' ? 'hover:bg-gray-700 text-gray-100' : 'hover:bg-blue-50 text-gray-700'}>
-              <User className="mr-2 h-4 w-4 text-blue-500" />
-              <span>My Account</span>
+            <DropdownMenuItem onClick={() => navigate("/admin/profile")} className={theme === 'dark' ? 'hover:bg-gray-700 text-gray-100' : 'hover:bg-gray-100 text-gray-700'}>
+              <User className="mr-2 h-4 w-4 text-gray-500" />
+              <span>Edit Profile</span>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/admin/settings")} className={theme === 'dark' ? 'hover:bg-gray-700 text-gray-100' : 'hover:bg-blue-50 text-gray-700'}>
-              <Settings className="mr-2 h-4 w-4 text-blue-500" />
+            <DropdownMenuItem onClick={() => navigate("/admin/settings")} className={theme === 'dark' ? 'hover:bg-gray-700 text-gray-100' : 'hover:bg-gray-100 text-gray-700'}>
+              <Settings className="mr-2 h-4 w-4 text-gray-500" />
               <span>Settings</span>
             </DropdownMenuItem>
-            <DropdownMenuSeparator className={theme === 'dark' ? 'bg-gray-600' : 'bg-blue-200'} />
-            <DropdownMenuItem onClick={handleLogout} className="text-red-600 hover:text-red-700 hover:bg-red-50">
+            <DropdownMenuSeparator className={theme === 'dark' ? 'bg-gray-600' : 'bg-gray-300'} />
+            <DropdownMenuItem onClick={handleLogout} className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
               <LogOut className="mr-2 h-4 w-4" />
               <span>Log out</span>
             </DropdownMenuItem>

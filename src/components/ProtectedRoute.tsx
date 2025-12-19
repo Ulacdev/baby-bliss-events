@@ -5,11 +5,13 @@ import { Loader2 } from "lucide-react";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
+  requiredRole?: string | string[];
 }
 
-const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
+const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   const navigate = useNavigate();
   const [session, setSession] = useState<any>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -27,6 +29,10 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     // THEN check for existing session
     api.getSession().then((response) => {
       setSession(response.session);
+      
+      // Get user role from localStorage or API response
+      const storedRole = localStorage.getItem('user_role');
+      setUserRole(storedRole || response.user?.role || 'client');
       setLoading(false);
 
       if (!response.session) {
@@ -36,6 +42,20 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  // Check if user has required role
+  if (loading === false && requiredRole) {
+    const roles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
+    if (!roles.includes(userRole)) {
+      // Redirect to appropriate dashboard based on role
+      if (userRole === 'admin') {
+        navigate("/admin");
+      } else {
+        navigate("/");
+      }
+      return null;
+    }
+  }
 
   if (loading) {
     return (

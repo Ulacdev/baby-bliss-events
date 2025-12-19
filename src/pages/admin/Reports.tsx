@@ -18,7 +18,7 @@ import { FileText } from "lucide-react";
 
 const Reports = () => {
   const { toast } = useToast();
-  const { isCollapsed: sidebarCollapsed, toggleSidebar } = useSidebar();
+  const { isCollapsed: sidebarCollapsed, toggleSidebar, marginClass } = useSidebar();
   const { theme } = useTheme();
   const [stats, setStats] = useState<any>({});
   const [activities, setActivities] = useState<any[]>([]);
@@ -170,26 +170,23 @@ const Reports = () => {
   };
   
   const StatCard = ({ title, value, change, changeType, description, icon: Icon, color, bgColor }: any) => (
-    <Card className={`relative overflow-hidden transition-all border-0 shadow-cyber-ocean hover:neon-glow-blue ${theme === 'dark' ? 'shadow-gray-900/10' : ''}`}>
-      <div className={`absolute top-0 right-0 w-16 h-16 ${bgColor} rounded-bl-3xl opacity-15`}></div>
-      <div className={`absolute inset-0 bg-gradient-to-br ${theme === 'dark' ? 'from-gray-800/20 via-transparent to-gray-900/10' : 'from-white/20 via-transparent to-blue-50/10'} rounded-lg`}></div>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-        <CardTitle className={`text-sm font-semibold font-admin-premium tracking-tight ${theme === 'dark' ? 'text-gray-300' : 'text-slate-600'}`}>{title}</CardTitle>
-        <div className={`p-3 rounded-xl ${bgColor} shadow-lg backdrop-blur-sm border border-white/20`}>
-          <Icon className={`h-6 w-6 ${color}`} />
+    <Card className={`border-0 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${theme === 'dark' ? 'bg-gray-800/60 backdrop-blur-sm shadow-lg' : 'bg-white shadow-sm border border-gray-100'}`}>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 pt-6">
+        <CardTitle className={`text-xs font-semibold uppercase tracking-wider ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>{title}</CardTitle>
+        <div className={`p-3 rounded-lg ${theme === 'dark' ? 'bg-gray-700' : bgColor} shadow-md`}>
+          <Icon className={`h-5 w-5 ${theme === 'dark' ? 'text-blue-400' : color}`} />
         </div>
       </CardHeader>
-      <CardContent className="relative z-10">
-        <div className={`text-4xl font-bold mb-2 font-admin-premium ${theme === 'dark' ? 'text-gray-100' : 'bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent'}`}>
-          {loading ? "..." : value}
-        </div>
+      <CardContent>
+        <div className={`text-4xl font-bold mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{loading ? "..." : value}</div>
         {change && (
-          <div className={`flex items-center text-sm font-medium ${changeType === 'positive' ? 'text-emerald-600' : 'text-red-600'}`}>
-            {changeType === 'positive' ? <ArrowUpIcon className="h-3 w-3 mr-1" /> : <ArrowDownIcon className="h-3 w-3 mr-1" />}
+          <div className={`flex items-center text-sm font-medium ${changeType === 'positive' ? 'text-emerald-600' : 'text-amber-600'}`}>
+            {changeType === 'positive' ? <ArrowUpIcon className="h-4 w-4 mr-1" /> : <ArrowDownIcon className="h-4 w-4 mr-1" />}
             {change}
+            <span className={`ml-2 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>vs last month</span>
           </div>
         )}
-        <p className={`text-xs mt-2 font-admin-premium tracking-wide ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>{description}</p>
+        <p className={`text-sm mt-3 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>{description}</p>
       </CardContent>
     </Card>
   );
@@ -351,29 +348,29 @@ const Reports = () => {
 
   return (
     <ProtectedRoute>
-      <div className={`flex min-h-screen font-admin-premium ${theme === 'dark' ? 'bg-gray-900' : 'bg-white'}`}>
-        <AdminSidebar isCollapsed={sidebarCollapsed} />
+      <div className={`flex min-h-screen font-admin-premium ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'}`}>
+        <AdminSidebar isCollapsed={sidebarCollapsed} onToggleSidebar={toggleSidebar} />
 
-        <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'md:ml-16' : 'md:ml-64'}`}>
+        <div className={`flex-1 flex flex-col transition-all duration-300 ${marginClass}`}>
           <AdminHeader onToggleSidebar={toggleSidebar} isSidebarCollapsed={sidebarCollapsed} />
 
-          <main className="flex-1 p-6 lg:p-8">
+          <main className="flex-1 p-8">
             {/* Header */}
             <div className="mb-8">
               <div className="flex items-center justify-between">
                 <div>
-                  <h1 className={`text-3xl font-bold mb-2 ${theme === 'dark' ? 'text-gray-100' : 'text-gray-900'}`}>Reports & Analytics</h1>
-                  <p className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>Generate reports and track system activities</p>
+                  <h1 className={`text-3xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Reports & Analytics</h1>
+                  <p className={`mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Generate reports and track system activities</p>
                 </div>
-                <div className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                  <Activity className="h-4 w-4 inline mr-1" />
+                <div className={`flex items-center gap-2 text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-500'}`}>
+                  <Activity className={`h-4 w-4 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-500'}`} />
                   Last updated: {new Date().toLocaleTimeString()}
                 </div>
               </div>
             </div>
 
             {/* KPI Cards */}
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4 mb-8">
               <StatCard
                 title="Total Bookings"
                 value={stats.total_bookings || 0}
@@ -431,11 +428,11 @@ const Reports = () => {
            </div>
             <div className="flex gap-2">
               <Button variant="outline" onClick={printReport}>
-                <Printer className="h-4 w-4 mr-2" />
+                <Printer className={`h-4 w-4 mr-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`} />
                 Print Report
               </Button>
               <Button onClick={handleExportCSV} variant="outline" size="sm" title="Export CSV">
-                <FileText className="h-4 w-4" />
+                <FileText className={`h-4 w-4 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`} />
               </Button>
             </div>
           </div>
@@ -477,7 +474,7 @@ const Reports = () => {
             </div>
             <div className="flex items-end">
               <Button variant="outline" onClick={() => {setSortMonth(''); setActivityType(''); setAuditSearch('');}}>
-                <Filter className="h-4 w-4 mr-2" />
+                <Filter className={`h-4 w-4 mr-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`} />
                 Clear Filters
               </Button>
             </div>
@@ -531,13 +528,13 @@ const Reports = () => {
                     <tr key={log.id} className={`transition-colors duration-150 ${theme === 'dark' ? `hover:bg-gray-700/50 ${index % 2 === 0 ? 'bg-gray-900' : 'bg-gray-800/30'}` : `hover:bg-blue-50/50 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}`}>
                       <td className={`py-4 px-6 border-r ${theme === 'dark' ? 'text-gray-300 border-gray-700' : 'text-gray-700 border-gray-100'}`}>
                         <div className="flex items-center gap-2">
-                          <Calendar className={`h-4 w-4 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`} />
+                          <Calendar className={`h-4 w-4 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-400'}`} />
                           <span className="text-sm">{new Date(log.created_at).toLocaleString()}</span>
                         </div>
                       </td>
                       <td className={`py-4 px-6 text-center border-r print:hidden ${theme === 'dark' ? 'border-gray-700' : 'border-gray-100'}`}>
                         <div className="flex items-center justify-center">
-                          <User className={`h-4 w-4 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`} />
+                          <User className={`h-4 w-4 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-400'}`} />
                         </div>
                         <Badge variant="outline" className="mt-1">{log.user_name}</Badge>
                       </td>
@@ -549,7 +546,7 @@ const Reports = () => {
                       </td>
                       <td className={`py-4 px-6 text-center border-r print:hidden ${theme === 'dark' ? 'text-gray-300 border-gray-700' : 'text-gray-600 border-gray-100'}`}>
                         <div className="flex items-center justify-center gap-1">
-                          <Globe className={`h-4 w-4 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`} />
+                          <Globe className={`h-4 w-4 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-400'}`} />
                           <span className="text-sm">{log.ip_address}</span>
                         </div>
                       </td>

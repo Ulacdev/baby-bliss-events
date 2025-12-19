@@ -31,7 +31,7 @@ const Hero = () => {
                 </Button>
               </Link>
               <Link to="/about">
-                <Button size="lg" variant="outline" className="rounded-full px-8 border-2 border-secondary text-secondary-foreground hover:bg-secondary/10 transition-smooth">
+                <Button size="lg" variant="outline" className="rounded-full px-8 border-2 border-secondary text-secondary-foreground transition-smooth">
                   Learn More
                 </Button>
               </Link>

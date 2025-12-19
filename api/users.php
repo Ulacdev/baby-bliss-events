@@ -142,8 +142,8 @@ function handleCreateUser()
         return;
     }
 
-    if (!in_array($role, ['admin', 'staff'])) {
-        sendResponse(['error' => 'Invalid role. Must be admin or staff'], 400);
+    if ($role !== 'admin') {
+        sendResponse(['error' => 'Invalid role. Only admin role is allowed'], 400);
         return;
     }
 
@@ -249,8 +249,8 @@ function handleUpdateUser()
             return;
         }
 
-        if (!in_array($role, ['admin', 'staff'])) {
-            sendResponse(['error' => 'Invalid role. Must be admin or staff'], 400);
+        if ($role !== 'admin') {
+            sendResponse(['error' => 'Invalid role. Only admin role is allowed'], 400);
             return;
         }
 

@@ -70,12 +70,15 @@ function handlePayments($method, $id)
 
 function handleExpenses($method, $id)
 {
+    global $user;
     $conn = getDBConnection();
 
     if ($method === 'GET') {
-        $query = "SELECT e.*, u.full_name FROM expenses e 
-                  LEFT JOIN users u ON e.created_by = u.id 
-                  ORDER BY e.expense_date DESC";
+        $query = "SELECT e.*, u.full_name FROM expenses e
+                  LEFT JOIN users u ON e.created_by = u.id";
+
+
+        $query .= " ORDER BY e.expense_date DESC";
 
         $result = $conn->query($query);
         $expenses = [];
@@ -139,9 +142,12 @@ function handleExpenses($method, $id)
 
 function getFinancialSummary()
 {
+    global $user;
     $conn = getDBConnection();
 
-    $query = "SELECT 
+    $whereClause = "WHERE b.deleted_at IS NULL";
+
+    $query = "SELECT
         SUM(CASE WHEN p.payment_status = 'paid' THEN p.amount ELSE 0 END) as total_paid,
         SUM(CASE WHEN p.payment_status = 'pending' THEN p.amount ELSE 0 END) as total_pending,
         SUM(CASE WHEN p.payment_status = 'refunded' THEN p.amount ELSE 0 END) as total_refunded,
@@ -149,7 +155,7 @@ function getFinancialSummary()
         (SELECT SUM(amount) FROM expenses) as total_expenses
         FROM payments p
         JOIN bookings b ON p.booking_id = b.id
-        WHERE b.deleted_at IS NULL";
+        $whereClause";
 
     $result = $conn->query($query);
     $summary = $result->fetch_assoc();

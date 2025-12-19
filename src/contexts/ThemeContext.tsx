@@ -37,10 +37,14 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     // Remove previous theme classes
     root.classList.remove('light', 'dark');
 
-    // Add current theme class
-    root.classList.add(theme);
+    // Only allow dark mode on admin pages, force light on all other pages
+    const isAdminPage = window.location.pathname.startsWith('/admin');
+    const classToApply = isAdminPage ? theme : 'light';
 
-    // Store in localStorage
+    // Add the resolved theme class
+    root.classList.add(classToApply);
+
+    // Store user preference (used for admin pages)
     localStorage.setItem('theme', theme);
   }, [theme]);
 

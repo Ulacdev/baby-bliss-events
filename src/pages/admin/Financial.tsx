@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ActionMenu } from "@/components/ui/ActionMenu";
-import { TrendingUp, TrendingDown, Wallet, Plus, Calendar, CheckCircle, XCircle, Printer, Download, Activity, ArrowUpIcon, ArrowDownIcon, BarChart3, PieChart, MoreVertical, Trash2, Filter, User, MapPin } from "lucide-react";
+import { TrendingUp, TrendingDown, Wallet, Plus, Calendar, CheckCircle, XCircle, Printer, Download, Activity, ArrowUpIcon, ArrowDownIcon, BarChart3, PieChart, MoreVertical, Trash2, Filter, User, MapPin, Users } from "lucide-react";
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart as RechartsPieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useToast } from "@/hooks/use-toast";
 import { useSidebar } from "@/hooks/use-sidebar";
@@ -20,7 +20,7 @@ import { FileText } from "lucide-react";
 
 const Financial = () => {
   const { toast } = useToast();
-  const { isCollapsed: sidebarCollapsed, toggleSidebar } = useSidebar();
+  const { isCollapsed: sidebarCollapsed, toggleSidebar, marginClass } = useSidebar();
   const { theme } = useTheme();
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -424,55 +424,108 @@ const Financial = () => {
   });
 
   const StatCard = ({ title, value, change, changeType, description, icon: Icon, color, bgColor }: any) => (
-    <Card className={`relative overflow-hidden transition-all border-0 shadow-cyber-ocean hover:neon-glow-blue ${theme === 'dark' ? 'shadow-gray-900/10' : ''}`}>
-      <div className={`absolute top-0 right-0 w-16 h-16 ${bgColor} rounded-bl-3xl opacity-15`}></div>
-      <div className={`absolute inset-0 bg-gradient-to-br ${theme === 'dark' ? 'from-gray-800/20 via-transparent to-gray-900/10' : 'from-white/20 via-transparent to-blue-50/10'} rounded-lg`}></div>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-        <CardTitle className={`text-sm font-semibold font-admin-premium tracking-tight ${theme === 'dark' ? 'text-gray-300' : 'text-slate-600'}`}>{title}</CardTitle>
-        <div className={`p-3 rounded-xl ${bgColor} shadow-lg backdrop-blur-sm border border-white/20`}>
-          <Icon className={`h-6 w-6 ${color}`} />
+    <Card className={`border-0 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${theme === 'dark' ? 'bg-gray-800/60 backdrop-blur-sm shadow-lg' : 'bg-white shadow-sm border border-gray-100'}`}>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 pt-6">
+        <CardTitle className={`text-xs font-semibold uppercase tracking-wider ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>{title}</CardTitle>
+        <div className={`p-3 rounded-lg ${theme === 'dark' ? 'bg-gray-700' : bgColor} shadow-md`}>
+          <Icon className={`h-5 w-5 ${theme === 'dark' ? 'text-blue-400' : color}`} />
         </div>
       </CardHeader>
-      <CardContent className="relative z-10">
-        <div className={`text-4xl font-bold mb-2 font-admin-premium ${theme === 'dark' ? 'text-gray-100' : 'bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent'}`}>
-          {loading ? "..." : value}
-        </div>
+      <CardContent>
+        <div className={`text-4xl font-bold mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{loading ? "..." : value}</div>
         {change && (
-          <div className={`flex items-center text-sm font-medium ${changeType === 'positive' ? 'text-emerald-600' : 'text-red-600'}`}>
-            {changeType === 'positive' ? <ArrowUpIcon className="h-3 w-3 mr-1" /> : <ArrowDownIcon className="h-3 w-3 mr-1" />}
+          <div className={`flex items-center text-sm font-medium ${changeType === 'positive' ? 'text-emerald-600' : 'text-amber-600'}`}>
+            {changeType === 'positive' ? <ArrowUpIcon className="h-4 w-4 mr-1" /> : <ArrowDownIcon className="h-4 w-4 mr-1" />}
             {change}
+            <span className={`ml-2 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>vs last month</span>
           </div>
         )}
-        <p className={`text-xs mt-2 font-admin-premium tracking-wide ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>{description}</p>
+        <p className={`text-sm mt-3 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>{description}</p>
+      </CardContent>
+    </Card>
+  );
+
+  const QuickActionCard = ({ title, description, icon: Icon, color, bgColor, onClick }: any) => (
+    <Card className={`border-0 cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${theme === 'dark' ? 'bg-gray-800/60 backdrop-blur-sm shadow-lg hover:bg-gray-700/60' : 'bg-white shadow-sm border border-gray-100 hover:border-blue-200 hover:bg-blue-50/30'}`} onClick={onClick}>
+      <CardContent className="p-6">
+        <div className={`inline-flex p-3 rounded-lg ${theme === 'dark' ? 'bg-gray-700' : bgColor} mb-4 shadow-md`}>
+          <Icon className={`h-6 w-6 ${theme === 'dark' ? 'text-blue-400' : color}`} />
+        </div>
+        <h3 className={`font-semibold text-base mb-1 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{title}</h3>
+        <p className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>{description}</p>
       </CardContent>
     </Card>
   );
 
   return (
     <ProtectedRoute>
-      <div className={`flex min-h-screen font-admin-premium ${theme === 'dark' ? 'bg-gray-900' : 'bg-white'}`}>
-        <AdminSidebar isCollapsed={sidebarCollapsed} />
+      <div className={`flex min-h-screen font-admin-premium ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'}`}>
+        <AdminSidebar isCollapsed={sidebarCollapsed} onToggleSidebar={toggleSidebar} />
 
-        <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'md:ml-16' : 'md:ml-64'}`}>
+        <div className={`flex-1 flex flex-col transition-all duration-300 ${marginClass}`}>
           <AdminHeader onToggleSidebar={toggleSidebar} isSidebarCollapsed={sidebarCollapsed} />
 
-          <main className="flex-1 p-6 lg:p-8 pb-0">
+          <main className="flex-1 p-8">
             {/* Header */}
             <div className="mb-8">
               <div className="flex items-center justify-between">
                 <div>
-                  <h1 className={`text-3xl font-bold mb-2 ${theme === 'dark' ? 'text-gray-100' : 'text-gray-900'}`}>Financial Management</h1>
-                  <p className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>Track income, expenses, and financial reports</p>
+                  <h1 className={`text-3xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Financial Management</h1>
+                  <p className={`mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Track payments and revenue analytics</p>
                 </div>
-                <div className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                  <Activity className="h-4 w-4 inline mr-1" />
+                <div className={`flex items-center gap-2 text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-500'}`}>
+                  <Activity className={`h-4 w-4 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-500'}`} />
                   Last updated: {new Date().toLocaleTimeString()}
                 </div>
               </div>
             </div>
 
-            {/* Filters */}
-            <div className={`grid grid-cols-1 md:grid-cols-5 gap-4 mb-6 p-4 rounded-lg ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-50'}`}>
+            {/* Financial Dashboard - KPI Cards */}
+            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4 mb-8">
+              <StatCard
+                title="Total Revenue"
+                value={`₱${totals.totalRevenue.toLocaleString()}`}
+                change="+15.3%"
+                changeType="positive"
+                description={`From ${bookings.length} bookings`}
+                icon={Wallet}
+                color="text-blue-600"
+                bgColor={theme === 'dark' ? 'bg-blue-900/30' : 'bg-blue-50'}
+              />
+              <StatCard
+                title="Paid Revenue"
+                value={`₱${totals.paidRevenue.toLocaleString()}`}
+                change="+22.1%"
+                changeType="positive"
+                description={`${Object.keys(payments).length} payments received`}
+                icon={TrendingUp}
+                color="text-emerald-600"
+                bgColor={theme === 'dark' ? 'bg-emerald-900/30' : 'bg-emerald-50'}
+              />
+              <StatCard
+                title="Pending Revenue"
+                value={`₱${totals.pendingRevenue.toLocaleString()}`}
+                change="-8.2%"
+                changeType="negative"
+                description={`${bookings.length - Object.keys(payments).length} pending payments`}
+                icon={TrendingDown}
+                color="text-orange-600"
+                bgColor={theme === 'dark' ? 'bg-orange-900/30' : 'bg-orange-50'}
+              />
+              <StatCard
+                title="Payment Rate"
+                value={`${bookings.length > 0 ? Math.round((Object.keys(payments).length / bookings.length) * 100) : 0}%`}
+                change="+12.5%"
+                changeType="positive"
+                description="Payment completion rate"
+                icon={CheckCircle}
+                color="text-cyan-700"
+                bgColor={theme === 'dark' ? 'bg-cyan-900/30' : 'bg-cyan-50'}
+              />
+            </div>
+
+            {/* Filters and Actions */}
+            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-5 mb-6 p-4 rounded-lg print:hidden ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-50'}">
               <div className="space-y-2">
                 <Label className={theme === 'dark' ? 'text-white' : ''}>Payment Status</Label>
                 <Select value={paymentFilter} onValueChange={setPaymentFilter}>
@@ -497,60 +550,16 @@ const Financial = () => {
               </div>
               <div className="flex items-end gap-2">
                 <Button onClick={printReport} variant="outline" size="sm" title="Print" className={theme === 'dark' ? 'border-gray-600 hover:bg-gray-700' : ''}>
-                  <Printer className={`h-4 w-4 ${theme === 'dark' ? 'text-white' : ''}`} />
+                  <Printer className={`h-4 w-4 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`} />
                 </Button>
                 <Button onClick={handleExportCSV} variant="outline" size="sm" title="Export CSV" className={theme === 'dark' ? 'border-gray-600 hover:bg-gray-700' : ''}>
-                  <FileText className={`h-4 w-4 ${theme === 'dark' ? 'text-white' : ''}`} />
+                  <FileText className={`h-4 w-4 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`} />
                 </Button>
                 <Button variant="outline" onClick={() => {setPaymentFilter('all'); setMonthFilter('');}} className={theme === 'dark' ? 'border-gray-600 hover:bg-gray-700 text-white' : ''}>
-                  <Filter className={`h-4 w-4 mr-2 ${theme === 'dark' ? 'text-white' : ''}`} />
+                  <Filter className={`h-4 w-4 mr-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`} />
                   Clear Filters
                 </Button>
               </div>
-            </div>
-
-            {/* KPI Cards */}
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
-              <StatCard
-                title="Total Revenue"
-                value={`₱${totals.totalRevenue.toLocaleString()}`}
-                change="+15.3%"
-                changeType="positive"
-                description={`From ${bookings.length} bookings`}
-                icon={Wallet}
-                color="text-blue-600"
-                bgColor="bg-blue-50"
-              />
-              <StatCard
-                title="Paid Revenue"
-                value={`₱${totals.paidRevenue.toLocaleString()}`}
-                change="+22.1%"
-                changeType="positive"
-                description={`${Object.keys(payments).length} payments received`}
-                icon={TrendingUp}
-                color="text-emerald-600"
-                bgColor="bg-emerald-50"
-              />
-              <StatCard
-                title="Pending Revenue"
-                value={`₱${totals.pendingRevenue.toLocaleString()}`}
-                change="-8.2%"
-                changeType="negative"
-                description={`${bookings.length - Object.keys(payments).length} pending payments`}
-                icon={TrendingDown}
-                color="text-orange-600"
-                bgColor="bg-orange-50"
-              />
-              <StatCard
-                title="Payment Rate"
-                value={`${bookings.length > 0 ? Math.round((Object.keys(payments).length / bookings.length) * 100) : 0}%`}
-                change="+12.5%"
-                changeType="positive"
-                description="Payment completion rate"
-                icon={CheckCircle}
-                color="text-cyan-700"
-                bgColor="bg-cyan-50"
-              />
             </div>
 
             {/* Bookings Revenue Table */}
@@ -625,10 +634,10 @@ const Financial = () => {
                             const isPaid = payments[booking.id];
                             const amount = packagePrices[booking.package] || 0;
                             return (
-                              <tr key={booking.id} className={`transition-colors duration-150 ${theme === 'dark' ? `hover:bg-gray-700/50 ${index % 2 === 0 ? 'bg-gray-900' : 'bg-gray-800/30'}` : `hover:bg-blue-50/50 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}`}>
+                              <tr key={booking.id} className={`transition-colors duration-150 ${theme === 'dark' ? 'hover:bg-gray-700/50 bg-gray-800' : 'hover:bg-blue-50/50 bg-white'}`}>
                                 <td className={`py-4 px-6 font-semibold border-r ${theme === 'dark' ? 'text-gray-200 border-gray-700' : 'text-gray-900 border-gray-100'}`}>
                                   <div className="flex items-center gap-2">
-                                    <User className={`h-4 w-4 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`} />
+                                    <User className={`h-4 w-4 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-400'}`} />
                                     <span className="truncate">{booking.first_name} {booking.last_name}</span>
                                   </div>
                                 </td>
@@ -636,11 +645,11 @@ const Financial = () => {
                                   <span className="truncate block">{booking.first_name} {booking.last_name} Baby Shower</span>
                                 </td>
                                 <td className={`py-4 px-6 text-center border-r print:hidden ${theme === 'dark' ? 'border-gray-700' : 'border-gray-100'}`}>
-                                  <Badge className="capitalize">{booking.package}</Badge>
+                                  <Badge className="capitalize bg-gray-500 text-white rounded-[5px]">{booking.package}</Badge>
                                 </td>
                                 <td className={`py-4 px-6 text-center border-r ${theme === 'dark' ? 'text-gray-300 border-gray-700' : 'text-gray-600 border-gray-100'}`}>
                                   <div className="flex items-center justify-center gap-1">
-                                    <Calendar className={`h-4 w-4 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`} />
+                                    <Calendar className={`h-4 w-4 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-400'}`} />
                                     <span className="text-sm">{new Date(booking.event_date).toLocaleDateString()}</span>
                                   </div>
                                 </td>
@@ -649,43 +658,51 @@ const Financial = () => {
                                 </td>
                                 <td className={`py-4 px-6 text-center border-r print:hidden ${theme === 'dark' ? 'border-gray-700' : 'border-gray-100'}`}>
                                   {isPaid ? (
-                                    <Badge className="bg-green-100 text-green-700 hover:bg-green-100">
+                                    <Badge className="bg-blue-600 text-white hover:bg-blue-700 rounded-[5px]">
                                       Paid
                                     </Badge>
                                   ) : (
-                                    <Badge className="bg-orange-100 text-orange-700 hover:bg-orange-100">
+                                    <Badge className="bg-orange-500 text-white hover:bg-orange-600 rounded-[5px]">
                                       Pending
                                     </Badge>
                                   )}
                                 </td>
                                 <td className="py-4 px-6 text-center print:hidden">
-                                  <ActionMenu
-                                    items={isPaid ? [
-                                      {
-                                        id: 'unpaid',
-                                        label: 'Mark as Unpaid',
-                                        icon: XCircle,
-                                        onClick: () => markAsUnpaid(booking.id),
-                                        color: 'text-red-500'
-                                      },
-                                      {
-                                        id: 'print',
-                                        label: 'Print Receipt',
-                                        icon: Printer,
-                                        onClick: () => printReceipt(booking.id),
-                                        color: 'text-blue-500'
-                                      },
-                                    ] : [
-                                      {
-                                        id: 'paid',
-                                        label: 'Mark as Paid',
-                                        icon: CheckCircle,
-                                        onClick: () => markAsPaid(booking.id, amount),
-                                        color: 'text-green-500',
-                                        disabled: booking.status === 'pending'
-                                      },
-                                    ]}
-                                  />
+                                  <div className="flex items-center justify-center gap-1">
+                                    {isPaid ? (
+                                      <>
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => markAsUnpaid(booking.id)}
+                                          className={`h-8 w-8 p-0 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700`}
+                                          title="Mark as Unpaid"
+                                        >
+                                          <XCircle className={`h-4 w-4 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`} />
+                                        </Button>
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => printReceipt(booking.id)}
+                                          className={`h-8 w-8 p-0 ${theme === 'dark' ? 'border-gray-600 hover:bg-gray-700' : ''}`}
+                                          title="Print Receipt"
+                                        >
+                                          <Printer className={`h-4 w-4 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`} />
+                                        </Button>
+                                      </>
+                                    ) : (
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => markAsPaid(booking.id, amount)}
+                                        disabled={booking.status === 'pending'}
+                                        className={`h-8 w-8 p-0 text-green-600 border-green-300 hover:bg-green-50 hover:border-green-400 disabled:opacity-50 disabled:cursor-not-allowed ${theme === 'dark' ? 'border-green-600 hover:bg-green-900/20' : ''}`}
+                                        title="Mark as Paid"
+                                      >
+                                        <CheckCircle className={`h-4 w-4 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`} />
+                                      </Button>
+                                    )}
+                                  </div>
                                 </td>
                               </tr>
                             );

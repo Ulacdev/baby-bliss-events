@@ -18,7 +18,7 @@ import { FileText } from "lucide-react";
 
 const Archive = () => {
   const { toast } = useToast();
-  const { isCollapsed: sidebarCollapsed, toggleSidebar } = useSidebar();
+  const { isCollapsed: sidebarCollapsed, toggleSidebar, marginClass } = useSidebar();
   const { theme } = useTheme();
   const [archivedBookings, setArchivedBookings] = useState<any[]>([]);
   const [archivedMessages, setArchivedMessages] = useState<any[]>([]);
@@ -90,6 +90,14 @@ const Archive = () => {
     if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
     return 0;
   });
+
+  const getStatusColor = (status: string) => {
+    return status === "confirmed"
+      ? "bg-green-500 text-white"
+      : status === "pending"
+      ? "bg-yellow-500 text-white"
+      : "bg-red-500 text-white";
+  };
 
   const sortedArchivedMessages = [...archivedMessages].filter(msg => {
     if (statusFilter !== 'all' && msg.status !== statusFilter) return false;
@@ -298,9 +306,9 @@ const Archive = () => {
 
   return (
     <ProtectedRoute>
-      <div className={`flex min-h-screen font-admin-premium ${theme === 'dark' ? 'bg-gray-900' : 'bg-white'}`}>
-        <AdminSidebar isCollapsed={sidebarCollapsed} />
-        <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'md:ml-16' : 'md:ml-64'}`}>
+      <div className={`flex min-h-screen font-admin-premium ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'}`}>
+        <AdminSidebar isCollapsed={sidebarCollapsed} onToggleSidebar={toggleSidebar} />
+        <div className={`flex-1 flex flex-col transition-all duration-300 ${marginClass}`}>
           <AdminHeader onToggleSidebar={toggleSidebar} isSidebarCollapsed={sidebarCollapsed} />
           <main className="flex-1 p-6 lg:p-8">
             <div className="space-y-6">
@@ -426,43 +434,45 @@ const Archive = () => {
                                     </div>
                                   </td>
                                   <td className={`py-4 px-6 text-center border-r print:hidden ${theme === 'dark' ? 'border-gray-600' : 'border-gray-100'}`}>
-                                    <Badge>{booking.status}</Badge>
+                                    <Badge className={`${getStatusColor(booking.status)} rounded-[5px]`}>{booking.status}</Badge>
                                   </td>
                                   <td className="py-4 px-6 text-center print:hidden">
-                                    <ActionMenu
-                                      items={[
-                                        {
-                                          id: 'restore',
-                                          label: 'Restore',
-                                          icon: RotateCcw,
-                                          onClick: async () => {
-                                            try {
-                                              await api.restoreBooking(booking.id);
-                                              toast({ title: "Success", description: "Booking restored" });
-                                              loadArchivedBookings();
-                                            } catch (error) {
-                                              toast({ title: "Error", description: "Failed to restore", variant: "destructive" });
-                                            }
+                                    <div className="flex items-center justify-center gap-1">
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={async () => {
+                                          try {
+                                            await api.restoreBooking(booking.id);
+                                            toast({ title: "Success", description: "Booking restored" });
+                                            loadArchivedBookings();
+                                          } catch (error) {
+                                            toast({ title: "Error", description: "Failed to restore", variant: "destructive" });
                                           }
-                                        },
-                                        {
-                                          id: 'delete',
-                                          label: 'Delete',
-                                          icon: Trash2,
-                                          onClick: async () => {
-                                            try {
-                                              await api.permanentDeleteBooking(booking.id);
-                                              toast({ title: "Success", description: "Deleted" });
-                                              loadArchivedBookings();
-                                            } catch (error) {
-                                              toast({ title: "Error", description: "Failed", variant: "destructive" });
-                                            }
-                                          },
-                                          isDelete: true,
-                                          confirmMessage: `Are you sure you want to permanently delete this booking? This action cannot be undone.`
-                                        }
-                                      ]}
-                                    />
+                                        }}
+                                        className={`h-8 w-8 p-0 ${theme === 'dark' ? 'border-gray-600 hover:bg-gray-700' : ''}`}
+                                        title="Restore Booking"
+                                      >
+                                        <RotateCcw className="h-4 w-4" />
+                                      </Button>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={async () => {
+                                          try {
+                                            await api.permanentDeleteBooking(booking.id);
+                                            toast({ title: "Success", description: "Deleted" });
+                                            loadArchivedBookings();
+                                          } catch (error) {
+                                            toast({ title: "Error", description: "Failed", variant: "destructive" });
+                                          }
+                                        }}
+                                        className={`h-8 w-8 p-0 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700`}
+                                        title="Delete Booking"
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </div>
                                   </td>
                                 </tr>
                               ))}
@@ -602,40 +612,42 @@ const Archive = () => {
                                     </div>
                                   </td>
                                   <td className="py-4 px-6 text-center print:hidden">
-                                    <ActionMenu
-                                      items={[
-                                        {
-                                          id: 'restore',
-                                          label: 'Restore',
-                                          icon: RotateCcw,
-                                          onClick: async () => {
-                                            try {
-                                              await api.restoreArchivedItem('messages', msg.id);
-                                              toast({ title: "Success", description: "Message restored" });
-                                              loadArchivedMessages();
-                                            } catch (error) {
-                                              toast({ title: "Error", description: "Failed to restore", variant: "destructive" });
-                                            }
+                                    <div className="flex items-center justify-center gap-1">
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={async () => {
+                                          try {
+                                            await api.restoreArchivedItem('messages', msg.id);
+                                            toast({ title: "Success", description: "Message restored" });
+                                            loadArchivedMessages();
+                                          } catch (error) {
+                                            toast({ title: "Error", description: "Failed to restore", variant: "destructive" });
                                           }
-                                        },
-                                        {
-                                          id: 'delete',
-                                          label: 'Delete',
-                                          icon: Trash2,
-                                          onClick: async () => {
-                                            try {
-                                              await api.permanentlyDeleteArchivedItem('messages', msg.id);
-                                              toast({ title: "Success", description: "Deleted" });
-                                              loadArchivedMessages();
-                                            } catch (error) {
-                                              toast({ title: "Error", description: "Failed", variant: "destructive" });
-                                            }
-                                          },
-                                          isDelete: true,
-                                          confirmMessage: `Are you sure you want to permanently delete this message? This action cannot be undone.`
-                                        }
-                                      ]}
-                                    />
+                                        }}
+                                        className={`h-8 w-8 p-0 ${theme === 'dark' ? 'border-gray-600 hover:bg-gray-700' : ''}`}
+                                        title="Restore Message"
+                                      >
+                                        <RotateCcw className="h-4 w-4" />
+                                      </Button>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={async () => {
+                                          try {
+                                            await api.permanentlyDeleteArchivedItem('messages', msg.id);
+                                            toast({ title: "Success", description: "Deleted" });
+                                            loadArchivedMessages();
+                                          } catch (error) {
+                                            toast({ title: "Error", description: "Failed", variant: "destructive" });
+                                          }
+                                        }}
+                                        className={`h-8 w-8 p-0 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700`}
+                                        title="Delete Message"
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </div>
                                   </td>
                                 </tr>
                               ))}

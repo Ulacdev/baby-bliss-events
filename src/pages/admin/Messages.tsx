@@ -20,7 +20,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 
 const Messages = () => {
   const { toast } = useToast();
-  const { isCollapsed: sidebarCollapsed, toggleSidebar } = useSidebar();
+  const { isCollapsed: sidebarCollapsed, toggleSidebar, marginClass } = useSidebar();
   const { theme } = useTheme();
   const [messages, setMessages] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -298,64 +298,66 @@ const Messages = () => {
   });
 
   const StatCard = ({ title, value, change, changeType, description, icon: Icon, color, bgColor }: any) => (
-    <Card className={`relative overflow-hidden transition-all border-0 shadow-cyber-ocean hover:neon-glow-blue ${theme === 'dark' ? 'shadow-gray-900/10' : ''}`}>
-      <div className={`absolute top-0 right-0 w-16 h-16 ${bgColor} rounded-bl-3xl opacity-10`}></div>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className={`text-sm font-semibold ${theme === 'dark' ? 'text-gray-300' : 'text-muted-foreground'}`}>{title}</CardTitle>
-        <div className={`p-2 rounded-lg ${bgColor}`}>
-          <Icon className={`h-5 w-5 ${color}`} />
+    <Card className={`border-0 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${theme === 'dark' ? 'bg-gray-800/60 backdrop-blur-sm shadow-lg' : 'bg-white shadow-sm border border-gray-100'}`}>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 pt-6">
+        <CardTitle className={`text-xs font-semibold uppercase tracking-wider ${theme === 'dark' ? 'text-white' : 'text-gray-500'}`}>{title}</CardTitle>
+        <div className={`p-3 rounded-lg ${theme === 'dark' ? 'bg-gray-700' : bgColor} shadow-md`}>
+          <Icon className={`h-5 w-5 ${theme === 'dark' ? 'text-blue-400' : color}`} />
         </div>
       </CardHeader>
       <CardContent>
-        <div className={`text-3xl font-bold mb-1 ${theme === 'dark' ? 'text-gray-100' : ''}`}>{loading ? "..." : value}</div>
+        <div className={`text-4xl font-bold mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{loading ? "..." : value}</div>
         {change && (
-          <div className={`flex items-center text-sm ${changeType === 'positive' ? 'text-green-600' : 'text-red-600'}`}>
-            {changeType === 'positive' ? <ArrowUpIcon className="h-3 w-3 mr-1" /> : <ArrowDownIcon className="h-3 w-3 mr-1" />}
+          <div className={`flex items-center text-sm font-medium ${changeType === 'positive' ? 'text-emerald-600' : 'text-amber-600'}`}>
+            {changeType === 'positive' ? <ArrowUpIcon className="h-4 w-4 mr-1" /> : <ArrowDownIcon className="h-4 w-4 mr-1" />}
             {change}
+            <span className={`ml-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>vs last month</span>
           </div>
         )}
-        <p className={`text-xs mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-muted-foreground'}`}>{description}</p>
+        <p className={`text-sm mt-3 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>{description}</p>
       </CardContent>
     </Card>
   );
 
   return (
     <ProtectedRoute>
-      <div className={`flex min-h-screen font-admin-premium ${theme === 'dark' ? 'bg-gray-900' : 'bg-white'}`}>
-        <AdminSidebar isCollapsed={sidebarCollapsed} />
+      <div className={`flex min-h-screen font-admin-premium ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'}`}>
+        <AdminSidebar isCollapsed={sidebarCollapsed} onToggleSidebar={toggleSidebar} />
 
-        <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'md:ml-16' : 'md:ml-64'}`}>
+        <div className={`flex-1 flex flex-col transition-all duration-300 ${marginClass}`}>
           <AdminHeader onToggleSidebar={toggleSidebar} isSidebarCollapsed={sidebarCollapsed} />
 
-          <main className="flex-1 p-6 lg:p-8">
+          <main className="flex-1 p-8">
             {/* Header */}
             <div className="mb-8 print:hidden">
               <div className="flex items-center justify-between">
                 <div>
-                  <h1 className={`text-3xl font-bold mb-2 ${theme === 'dark' ? 'text-gray-100' : 'text-gray-900'}`}>Messages & Feedback</h1>
-                  <p className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>Manage customer messages and feedback</p>
+                  <h1 className={`text-3xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Messages & Feedback</h1>
+                  <p className={`mt-1 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Manage customer messages and feedback</p>
                 </div>
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
                     <Button
                       variant={viewMode === 'email' ? 'default' : 'outline'}
                       size="sm"
                       onClick={() => setViewMode('email')}
+                      className={theme === 'dark' ? 'text-white' : ''}
                     >
-                      <Mail className="h-4 w-4 mr-2" />
+                      <Mail className="h-4 w-4 mr-1" />
                       Email View
                     </Button>
                     <Button
                       variant={viewMode === 'table' ? 'default' : 'outline'}
                       size="sm"
                       onClick={() => setViewMode('table')}
+                      className={theme === 'dark' ? 'text-white' : ''}
                     >
-                      <MessageSquare className="h-4 w-4 mr-2" />
+                      <MessageSquare className="h-4 w-4 mr-1" />
                       Table View
                     </Button>
                   </div>
-                  <div className="text-sm text-gray-500">
-                    <Activity className="h-4 w-4 inline mr-1" />
+                  <div className={`flex items-center gap-2 text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-500'}`}>
+                    <Activity className={`h-4 w-4 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-500'}`} />
                     Last updated: {new Date().toLocaleTimeString()}
                   </div>
                 </div>
@@ -363,7 +365,7 @@ const Messages = () => {
             </div>
 
             {/* KPI Cards */}
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4 mb-8">
               <StatCard
                 title="Total Messages"
                 value={messages.length}
@@ -409,7 +411,7 @@ const Messages = () => {
             {/* Search and Filters */}
             <div className="flex flex-col sm:flex-row gap-4 mb-6 print:hidden">
               <div className="relative flex-1 max-w-md">
-                <Search className={`absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`} />
+                <Search className={`absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-400'}`} />
                 <Input
                   placeholder="Search messages..."
                   className="pl-10"
@@ -465,7 +467,7 @@ const Messages = () => {
                     <MessageSquare className="h-5 w-5 text-blue-500" />
                     All Messages
                   </CardTitle>
-                  <CardDescription className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>
+                  <CardDescription className={theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}>
                     Customer messages and feedback from contact form
                   </CardDescription>
                 </CardHeader>
@@ -478,8 +480,8 @@ const Messages = () => {
                   ) : filteredMessages.length === 0 ? (
                     <div className="text-center py-8">
                       <Mail className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-500">No messages found</p>
-                      <p className="text-sm text-gray-400">Customer messages will appear here</p>
+                      <p className={`text-gray-500 ${theme === 'dark' ? 'dark:text-gray-300' : ''}`}>No messages found</p>
+                      <p className={`text-sm text-gray-400 ${theme === 'dark' ? 'dark:text-gray-300' : ''}`}>Customer messages will appear here</p>
                     </div>
                   ) : (
                     <div className={`border rounded-lg overflow-hidden table-to-print ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}>
@@ -534,57 +536,59 @@ const Messages = () => {
                             {filteredMessages.map((message, index) => (
                               <tr key={message.id} className={`transition-colors duration-150 ${theme === 'dark' ? `hover:bg-gray-700/50 ${index % 2 === 0 ? 'bg-gray-900' : 'bg-gray-800/30'}` : `hover:bg-blue-50/50 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}`}>
                                 <td className={`py-4 px-6 font-semibold border-r ${theme === 'dark' ? 'text-gray-200 border-gray-700' : 'text-gray-900 border-gray-100'}`}>{message.name}</td>
-                                <td className={`py-4 px-6 border-r ${theme === 'dark' ? 'text-gray-300 border-gray-700' : 'text-gray-700 border-gray-100'}`}>
+                                <td className={`py-4 px-6 border-r ${theme === 'dark' ? 'text-white border-gray-700' : 'text-gray-700 border-gray-100'}`}>
                                   <div className="flex items-center gap-2">
-                                    <Mail className={`h-4 w-4 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`} />
+                                    <Mail className={`h-4 w-4 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-400'}`} />
                                     <span className="truncate">{message.email}</span>
                                   </div>
                                 </td>
-                                <td className={`py-4 px-6 border-r ${theme === 'dark' ? 'text-gray-300 border-gray-700' : 'text-gray-700 border-gray-100'}`}>
+                                <td className={`py-4 px-6 border-r ${theme === 'dark' ? 'text-white border-gray-700' : 'text-gray-700 border-gray-100'}`}>
                                   <span className="truncate block">{message.subject || 'N/A'}</span>
                                 </td>
                                 <td className={`py-4 px-6 text-center border-r print:hidden ${theme === 'dark' ? 'border-gray-700' : 'border-gray-100'}`}>
                                   {message.rating > 0 ? (
                                     <div className="flex items-center justify-center gap-1">
                                       {renderStars(message.rating)}
-                                      <span className={`text-sm ml-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>({message.rating})</span>
+                                      <span className={`text-sm ml-1 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>({message.rating})</span>
                                     </div>
                                   ) : (
-                                    <span className={`text-sm ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>No rating</span>
+                                    <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-400'}`}>No rating</span>
                                   )}
                                 </td>
                                 <td className={`py-4 px-6 text-center border-r print:hidden ${theme === 'dark' ? 'border-gray-700' : 'border-gray-100'}`}>
                                   {message.status === 'unread' ? (
                                     <Badge className="bg-blue-100 text-blue-800 border-blue-200">Unread</Badge>
                                   ) : (
-                                    <Badge className="bg-green-100 text-green-800 border-green-200">Read</Badge>
+                                    <Badge className="bg-green-500 text-white rounded-[5px]">Read</Badge>
                                   )}
                                 </td>
                                 <td className={`py-4 px-6 text-center border-r print:hidden ${theme === 'dark' ? 'text-gray-300 border-gray-700' : 'text-gray-600 border-gray-100'}`}>
                                   <div className="flex items-center justify-center gap-1">
-                                    <Calendar className={`h-4 w-4 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`} />
+                                    <Calendar className={`h-4 w-4 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-400'}`} />
                                     <span className="text-sm">{new Date(message.created_at).toLocaleDateString()}</span>
                                   </div>
                                 </td>
                                 <td className="py-4 px-6 text-center print:hidden">
-                                  <ActionMenu
-                                    items={[
-                                      {
-                                        id: 'view',
-                                        label: 'View',
-                                        icon: Eye,
-                                        onClick: () => openViewDialog(message)
-                                      },
-                                      {
-                                        id: 'delete',
-                                        label: 'Delete',
-                                        icon: Trash2,
-                                        onClick: () => handleDelete(message.id),
-                                        isDelete: true,
-                                        confirmMessage: `Are you sure you want to delete this message from ${message.name}? This action cannot be undone.`
-                                      }
-                                    ]}
-                                  />
+                                  <div className="flex items-center justify-center gap-2">
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => openViewDialog(message)}
+                                      className={`h-8 w-8 p-0 ${theme === 'dark' ? 'border-gray-600 hover:bg-gray-700' : ''}`}
+                                      title="View Message"
+                                    >
+                                      <Eye className={`h-4 w-4 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`} />
+                                    </Button>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleDelete(message.id)}
+                                      className={`h-8 w-8 p-0 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700`}
+                                      title="Delete Message"
+                                    >
+                                      <Trash2 className={`h-4 w-4 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`} />
+                                    </Button>
+                                  </div>
                                 </td>
                               </tr>
                             ))}
@@ -695,11 +699,11 @@ const Messages = () => {
                               </h3>
                               <div className={`flex items-center gap-4 text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
                                 <span className="flex items-center gap-1">
-                                  <Mail className="h-4 w-4" />
+                                  <Mail className={`h-4 w-4 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`} />
                                   From: {selectedMessage.name} ({selectedMessage.email})
                                 </span>
                                 <span className="flex items-center gap-1">
-                                  <Clock className="h-4 w-4" />
+                                  <Clock className={`h-4 w-4 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`} />
                                   {new Date(selectedMessage.created_at).toLocaleString()}
                                 </span>
                                 {selectedMessage.status === 'unread' && (
@@ -741,7 +745,7 @@ const Messages = () => {
 
                           <div className="prose prose-gray max-w-none">
                             <h4 className={`font-semibold mb-3 flex items-center gap-2 ${theme === 'dark' ? 'text-gray-100' : 'text-gray-900'}`}>
-                              <MessageSquare className="h-4 w-4" />
+                                <MessageSquare className={`h-4 w-4 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`} />
                               Message
                             </h4>
                             <div className={`border rounded-lg p-4 ${theme === 'dark' ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'}`}>

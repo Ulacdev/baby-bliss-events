@@ -20,7 +20,7 @@ import { FileText } from "lucide-react";
 
 const Clients = () => {
   const { toast } = useToast();
-  const { isCollapsed: sidebarCollapsed, toggleSidebar } = useSidebar();
+  const { isCollapsed: sidebarCollapsed, toggleSidebar, marginClass } = useSidebar();
   const { theme } = useTheme();
   const [clients, setClients] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,6 +29,8 @@ const Clients = () => {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [confirmedFilter, setConfirmedFilter] = useState<string>('all');
   const [monthFilter, setMonthFilter] = useState<string>('');
+  const [userRole, setUserRole] = useState<string>('admin');
+  const [userId, setUserId] = useState<number | null>(null);
 
   // Dialog states
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
@@ -45,12 +47,24 @@ const Clients = () => {
   });
 
   useEffect(() => {
+    // Get user role and ID
+    const role = localStorage.getItem('user_role') || 'admin';
+    setUserRole(role);
+
+    // Get user ID from localStorage (set during login)
+    const storedUserId = localStorage.getItem('user_id');
+    if (storedUserId) {
+      setUserId(parseInt(storedUserId));
+    }
+
     loadClients();
   }, []);
 
   const loadClients = async () => {
     try {
       const response = await api.getClients({ search });
+
+      // Admin can view all clients
       setClients(response.clients);
     } catch (error) {
       console.error("Failed to load clients:", error);
@@ -262,7 +276,7 @@ const Clients = () => {
 
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Confirmed:</span>
-            <Badge variant={client.confirmed_bookings > 0 ? "default" : "secondary"}>
+            <Badge className={`bg-blue-600 text-white hover:bg-blue-700 rounded-[5px]`}>
               {client.confirmed_bookings}
             </Badge>
           </div>
@@ -273,30 +287,33 @@ const Clients = () => {
           </div>
 
           <div className="flex gap-2 pt-2">
-            <ActionMenu
-              items={[
-                {
-                  id: 'view',
-                  label: 'View',
-                  icon: Eye,
-                  onClick: () => openViewDialog(client)
-                },
-                {
-                  id: 'edit',
-                  label: 'Edit',
-                  icon: Edit,
-                  onClick: () => openEditDialog(client)
-                },
-                {
-                  id: 'delete',
-                  label: 'Delete Client',
-                  icon: Trash2,
-                  onClick: () => handleDelete(client.email),
-                  isDelete: true,
-                  confirmMessage: `Are you sure you want to delete ${client.full_name} and all their bookings? This action cannot be undone.`
-                }
-              ]}
-            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => openViewDialog(client)}
+              className={`h-8 w-8 p-0 ${theme === 'dark' ? 'border-gray-600 hover:bg-gray-700' : ''}`}
+              title="View Client"
+            >
+              <Eye className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => openEditDialog(client)}
+              className={`h-8 w-8 p-0 ${theme === 'dark' ? 'border-gray-600 hover:bg-gray-700' : ''}`}
+              title="Edit Client"
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleDelete(client.email)}
+              className={`h-8 w-8 p-0 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700`}
+              title="Delete Client"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
           </div>
         </div>
       </CardContent>
@@ -446,10 +463,10 @@ const Clients = () => {
 
   return (
     <ProtectedRoute>
-      <div className={`flex min-h-screen font-admin-premium ${theme === 'dark' ? 'bg-gray-900' : 'bg-white'}`}>
-        <AdminSidebar isCollapsed={sidebarCollapsed} />
+      <div className={`flex min-h-screen font-admin-premium ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'}`}>
+        <AdminSidebar isCollapsed={sidebarCollapsed} onToggleSidebar={toggleSidebar} />
 
-        <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'md:ml-16' : 'md:ml-64'}`}>
+        <div className={`flex-1 flex flex-col transition-all duration-300 ${marginClass}`}>
           <AdminHeader onToggleSidebar={toggleSidebar} isSidebarCollapsed={sidebarCollapsed} />
 
           <main className="flex-1 p-6 lg:p-8 pb-0">
@@ -478,10 +495,12 @@ const Clients = () => {
                   onChange={(e) => handleSearch(e.target.value)}
                 />
               </div>
-              <Button onClick={() => setAddDialogOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-[5px] shadow-sm">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Client
-              </Button>
+              {userRole === 'admin' && (
+                <Button onClick={() => setAddDialogOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-[5px] shadow-sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Client
+                </Button>
+              )}
             </div>
 
             {/* Filters */}
@@ -593,7 +612,7 @@ const Clients = () => {
                         </thead>
                         <tbody className={`divide-y ${theme === 'dark' ? 'divide-gray-700' : 'divide-gray-200'}`}>
                           {sortedClients.map((client, index) => (
-                            <tr key={client.email} className={`transition-colors duration-150 ${theme === 'dark' ? `hover:bg-gray-700/50 ${index % 2 === 0 ? 'bg-gray-900' : 'bg-gray-800/30'}` : `hover:bg-blue-50/50 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}`}>
+                            <tr key={client.email} className={`transition-colors duration-150 ${theme === 'dark' ? 'hover:bg-gray-700/50 bg-gray-800' : 'hover:bg-blue-50/50 bg-white'}`}>
                               <td className={`py-4 px-6 font-semibold border-r ${theme === 'dark' ? 'text-gray-200 border-gray-700' : 'text-gray-900 border-gray-100'}`}>
                                 <div className="flex items-center gap-2">
                                   <User className={`h-4 w-4 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`} />
@@ -613,12 +632,12 @@ const Clients = () => {
                                 </div>
                               </td>
                               <td className={`py-4 px-6 text-center border-r print:hidden ${theme === 'dark' ? 'border-gray-700' : 'border-gray-100'}`}>
-                                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                                <Badge className="bg-blue-600 text-white hover:bg-blue-700 rounded-[5px]">
                                   {client.total_bookings}
                                 </Badge>
                               </td>
                               <td className={`py-4 px-6 text-center border-r print:hidden ${theme === 'dark' ? 'border-gray-700' : 'border-gray-100'}`}>
-                                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                                <Badge className="bg-blue-600 text-white hover:bg-blue-700 rounded-[5px]">
                                   {client.confirmed_bookings}
                                 </Badge>
                               </td>
@@ -629,30 +648,39 @@ const Clients = () => {
                                 </div>
                               </td>
                               <td className="py-4 px-6 text-center print:hidden">
-                                <ActionMenu
-                                  items={[
-                                    {
-                                      id: 'view',
-                                      label: 'View',
-                                      icon: Eye,
-                                      onClick: () => openViewDialog(client)
-                                    },
-                                    {
-                                      id: 'edit',
-                                      label: 'Edit',
-                                      icon: Edit,
-                                      onClick: () => openEditDialog(client)
-                                    },
-                                    {
-                                      id: 'delete',
-                                      label: 'Delete Client',
-                                      icon: Trash2,
-                                      onClick: () => handleDelete(client.email),
-                                      isDelete: true,
-                                      confirmMessage: `Are you sure you want to delete ${client.full_name} and all their bookings? This action cannot be undone.`
-                                    }
-                                  ]}
-                                />
+                                <div className="flex items-center justify-center gap-1">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => openViewDialog(client)}
+                                    className={`h-8 w-8 p-0 ${theme === 'dark' ? 'border-gray-600 hover:bg-gray-700' : ''}`}
+                                    title="View Client"
+                                  >
+                                    <Eye className="h-4 w-4" />
+                                  </Button>
+                                  {userRole === 'admin' && (
+                                    <>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => openEditDialog(client)}
+                                        className={`h-8 w-8 p-0 ${theme === 'dark' ? 'border-gray-600 hover:bg-gray-700' : ''}`}
+                                        title="Edit Client"
+                                      >
+                                        <Edit className="h-4 w-4" />
+                                      </Button>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => handleDelete(client.email)}
+                                        className={`h-8 w-8 p-0 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700`}
+                                        title="Delete Client"
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </>
+                                  )}
+                                </div>
                               </td>
                             </tr>
                           ))}

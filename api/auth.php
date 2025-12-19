@@ -1,4 +1,12 @@
 <?php
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
+
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    exit(0);
+}
+
 require_once 'config.php';
 require_once 'email_config.php';
 
@@ -53,7 +61,7 @@ function handleLogin()
     $conn = getDBConnection();
 
     // Get user from database
-    $stmt = $conn->prepare("SELECT id, email, password_hash, created_at FROM users WHERE email = ?");
+    $stmt = $conn->prepare("SELECT id, email, password_hash, role, created_at FROM users WHERE email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -88,7 +96,8 @@ function handleLogin()
     sendResponse([
         'user' => [
             'id' => $user['id'],
-            'email' => $user['email']
+            'email' => $user['email'],
+            'role' => $user['role']
         ],
         'session' => [
             'access_token' => $token,
@@ -139,7 +148,8 @@ function handleGetSession()
     sendResponse([
         'user' => [
             'id' => $user['user_id'],
-            'email' => $user['email']
+            'email' => $user['email'],
+            'role' => $user['role']
         ],
         'session' => [
             'access_token' => $token,
@@ -150,6 +160,7 @@ function handleGetSession()
 
 function handleForgotPassword()
 {
+    $resetLink = null;
     $input = getJsonInput();
     $missing = validateRequired($input, ['email']);
 
@@ -173,7 +184,12 @@ function handleForgotPassword()
 
     if ($result->num_rows === 0) {
         // Don't reveal if email exists or not for security
-        sendResponse(['message' => 'If the email exists, a password reset link has been sent.'], 200);
+        $response = ['message' => 'If the email exists, a password reset link has been sent.'];
+        if ($resetLink) {
+            $response['reset_link'] = $resetLink;
+        }
+        sendResponse($response, 200);
+        return;
     }
 
     $user = $result->fetch_assoc();
@@ -187,15 +203,25 @@ function handleForgotPassword()
     $stmt2->bind_param("isss", $user['id'], $email, $token, $expiresAt);
 
     if (!$stmt2->execute()) {
-        sendResponse(['error' => 'Failed to create reset token'], 500);
+        sendResponse(['error' => 'Failed to create reset token: ' . $stmt2->error], 500);
+        return;
     }
 
-    // Send email
-    $resetLink = "http://localhost:8080/reset-password?token=" . $token; // Adjust URL as needed
+    // Generate reset link with port 8080
+    $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    // Extract host without port if present
+    $hostParts = explode(':', $host);
+    $baseHost = $hostParts[0];
+    $resetLink = $protocol . "://" . $baseHost . ":8080/reset-password?token=" . $token;
+
     $subject = "Password Reset Request - Baby Bliss";
     $message = "Hello,\n\nYou have requested to reset your password. Click the link below to reset your password:\n\n" . $resetLink . "\n\nThis link will expire in 1 hour.\n\nIf you did not request this, please ignore this email.\n\nBest regards,\nBaby Bliss Team";
 
     $mail = new PHPMailer(true);
+    $emailSent = false;
+    $emailError = '';
+
     try {
         //Server settings
         $mail->isSMTP();
@@ -216,12 +242,32 @@ function handleForgotPassword()
         $mail->Body = $message;
 
         $mail->send();
+        $emailSent = true;
     } catch (Exception $e) {
-        // Log error but don't fail the request
-        error_log("Email send failed: " . $mail->ErrorInfo);
+        $emailError = $e->getMessage();
+        error_log("Email send failed for forgot password: " . $emailError);
     }
 
-    sendResponse(['message' => 'If the email exists, a password reset link has been sent.'], 200);
+    if (!$emailSent) {
+        error_log("Password reset email failed to send for user: $email. Error: $emailError");
+        // For debugging, include error in response (remove in production)
+        sendResponse([
+            'message' => 'If the email exists, a password reset link has been sent.',
+            'reset_link' => $resetLink,
+            'debug' => [
+                'email_sent' => false,
+                'error' => $emailError,
+                'email_config' => testEmailConfiguration() ? 'configured' : 'not_configured'
+            ]
+        ], 200);
+    } else {
+        error_log("Password reset email sent successfully to: $email");
+        sendResponse([
+            'message' => 'If the email exists, a password reset link has been sent.',
+            'reset_link' => $resetLink,
+            'debug' => ['email_sent' => true]
+        ], 200);
+    }
 }
 
 function handleResetPassword()

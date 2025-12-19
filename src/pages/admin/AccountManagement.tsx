@@ -20,7 +20,7 @@ import { FileText } from "lucide-react";
 
 const AccountManagement = () => {
   const { toast } = useToast();
-  const { isCollapsed: sidebarCollapsed, toggleSidebar } = useSidebar();
+  const { isCollapsed: sidebarCollapsed, toggleSidebar, marginClass } = useSidebar();
   const { theme } = useTheme();
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,7 +40,7 @@ const AccountManagement = () => {
     username: "",
     email: "",
     password: "",
-    role: "staff",
+    role: "client",
     first_name: "",
     last_name: "",
     phone: ""
@@ -215,16 +215,14 @@ const AccountManagement = () => {
 
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
-      case 'admin': return 'bg-red-100 text-red-800 border-red-200';
-      case 'staff': return 'bg-blue-100 text-blue-800 border-blue-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'admin': return 'bg-red-500 text-white';
+      default: return 'bg-gray-500 text-white';
     }
   };
 
   const getRoleIcon = (role: string) => {
     switch (role) {
       case 'admin': return <Shield className="w-4 h-4" />;
-      case 'staff': return <User className="w-4 h-4" />;
       default: return <User className="w-4 h-4" />;
     }
   };
@@ -400,10 +398,10 @@ const AccountManagement = () => {
 
   return (
     <ProtectedRoute>
-      <div className={`flex min-h-screen font-admin-premium ${theme === 'dark' ? 'bg-gray-900' : 'bg-white'}`}>
-        <AdminSidebar isCollapsed={sidebarCollapsed} />
+      <div className={`flex min-h-screen font-admin-premium ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'}`}>
+        <AdminSidebar isCollapsed={sidebarCollapsed} onToggleSidebar={toggleSidebar} />
 
-        <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'md:ml-16' : 'md:ml-64'}`}>
+        <div className={`flex-1 flex flex-col transition-all duration-300 ${marginClass}`}>
           <AdminHeader onToggleSidebar={toggleSidebar} isSidebarCollapsed={sidebarCollapsed} />
 
           <main className="flex-1 flex flex-col h-[calc(100vh-4rem)]">
@@ -498,43 +496,43 @@ const AccountManagement = () => {
                             <table className="w-full table-fixed">
                               <thead className={`border-b-2 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'}`}>
                                 <tr>
-                                  <th className={`w-1/6 text-center py-4 px-6 font-bold sticky top-0 ${theme === 'dark' ? 'text-gray-200 bg-gray-800' : 'text-gray-800 bg-gray-50'}`}>Image</th>
-                                  <th className={`w-1/4 text-left py-4 px-6 font-bold sticky top-0 cursor-pointer select-none border-r ${theme === 'dark' ? 'text-gray-200 bg-gray-800 hover:bg-gray-700 border-gray-600' : 'text-gray-800 bg-gray-50 hover:bg-gray-100 border-gray-200'}`} onClick={() => handleSort('full_name')}>
+                                  <th className={`w-1/6 text-center py-4 px-6 font-bold sticky top-0 border ${theme === 'dark' ? 'text-gray-200 bg-gray-800 border-gray-600' : 'text-gray-800 bg-gray-100 border-gray-300'}`}>Image</th>
+                                  <th className={`w-1/4 text-left py-4 px-6 font-bold sticky top-0 cursor-pointer select-none border-r border-l ${theme === 'dark' ? 'text-gray-200 bg-gray-800 hover:bg-gray-700 border-gray-600' : 'text-gray-800 bg-gray-100 hover:bg-gray-200 border-gray-300'}`} onClick={() => handleSort('full_name')}>
                                     <div className="flex items-center justify-between">
                                       <span>User</span>
                                       {sortColumn === 'full_name' && <span className="text-blue-600 font-bold">{sortDirection === 'asc' ? '↑' : '↓'}</span>}
                                     </div>
                                   </th>
-                                  <th className={`w-1/6 text-center py-4 px-6 font-bold sticky top-0 cursor-pointer select-none border-r print:hidden ${theme === 'dark' ? 'text-gray-200 bg-gray-800 hover:bg-gray-700 border-gray-600' : 'text-gray-800 bg-gray-50 hover:bg-gray-100 border-gray-200'}`} onClick={() => handleSort('role')}>
+                                  <th className={`w-1/6 text-center py-4 px-6 font-bold sticky top-0 cursor-pointer select-none border-r print:hidden ${theme === 'dark' ? 'text-gray-200 bg-gray-800 hover:bg-gray-700 border-gray-600' : 'text-gray-800 bg-gray-100 hover:bg-gray-200 border-gray-300'}`} onClick={() => handleSort('role')}>
                                     <div className="flex items-center justify-between">
                                       <span>Role</span>
                                       {sortColumn === 'role' && <span className="text-blue-600 font-bold">{sortDirection === 'asc' ? '↑' : '↓'}</span>}
                                     </div>
                                   </th>
-                                  <th className={`w-1/4 text-left py-4 px-6 font-bold sticky top-0 cursor-pointer select-none border-r ${theme === 'dark' ? 'text-gray-200 bg-gray-800 hover:bg-gray-700 border-gray-600' : 'text-gray-800 bg-gray-50 hover:bg-gray-100 border-gray-200'}`} onClick={() => handleSort('email')}>
+                                  <th className={`w-1/4 text-left py-4 px-6 font-bold sticky top-0 cursor-pointer select-none border-r ${theme === 'dark' ? 'text-gray-200 bg-gray-800 hover:bg-gray-700 border-gray-600' : 'text-gray-800 bg-gray-100 hover:bg-gray-200 border-gray-300'}`} onClick={() => handleSort('email')}>
                                     <div className="flex items-center justify-between">
                                       <span>Contact</span>
                                       {sortColumn === 'email' && <span className="text-blue-600 font-bold">{sortDirection === 'asc' ? '↑' : '↓'}</span>}
                                     </div>
                                   </th>
-                                  <th className={`w-1/6 text-center py-4 px-6 font-bold sticky top-0 cursor-pointer select-none border-r print:hidden ${theme === 'dark' ? 'text-gray-200 bg-gray-800 hover:bg-gray-700 border-gray-600' : 'text-gray-800 bg-gray-50 hover:bg-gray-100 border-gray-200'}`} onClick={() => handleSort('status')}>
+                                  <th className={`w-1/6 text-center py-4 px-6 font-bold sticky top-0 cursor-pointer select-none border-r print:hidden ${theme === 'dark' ? 'text-gray-200 bg-gray-800 hover:bg-gray-700 border-gray-600' : 'text-gray-800 bg-gray-100 hover:bg-gray-200 border-gray-300'}`} onClick={() => handleSort('status')}>
                                     <div className="flex items-center justify-between">
                                       <span>Status</span>
                                       {sortColumn === 'status' && <span className="text-blue-600 font-bold">{sortDirection === 'asc' ? '↑' : '↓'}</span>}
                                     </div>
                                   </th>
-                                  <th className={`w-1/6 text-center py-4 px-6 font-bold sticky top-0 cursor-pointer select-none border-r print:hidden ${theme === 'dark' ? 'text-gray-200 bg-gray-800 hover:bg-gray-700 border-gray-600' : 'text-gray-800 bg-gray-50 hover:bg-gray-100 border-gray-200'}`} onClick={() => handleSort('created_at')}>
+                                  <th className={`w-1/6 text-center py-4 px-6 font-bold sticky top-0 cursor-pointer select-none border-r print:hidden ${theme === 'dark' ? 'text-gray-200 bg-gray-800 hover:bg-gray-700 border-gray-600' : 'text-gray-800 bg-gray-100 hover:bg-gray-200 border-gray-300'}`} onClick={() => handleSort('created_at')}>
                                     <div className="flex items-center justify-between">
                                       <span>Created</span>
                                       {sortColumn === 'created_at' && <span className="text-blue-600 font-bold">{sortDirection === 'asc' ? '↑' : '↓'}</span>}
                                     </div>
                                   </th>
-                                  <th className={`w-1/6 text-center py-4 px-6 font-bold sticky top-0 print:hidden ${theme === 'dark' ? 'text-gray-200 bg-gray-800' : 'text-gray-800 bg-gray-50'}`}>Actions</th>
+                                  <th className={`w-1/6 text-center py-4 px-6 font-bold sticky top-0 print:hidden border-r ${theme === 'dark' ? 'text-gray-200 bg-gray-800 border-gray-600' : 'text-gray-800 bg-gray-100 border-gray-300'}`}>Actions</th>
                                 </tr>
                               </thead>
                               <tbody className={`divide-y ${theme === 'dark' ? 'divide-gray-700' : 'divide-gray-200'}`}>
                                   {sortedUsers.map((user, index) => (
-                                    <tr key={user.id} className={`transition-colors duration-150 ${theme === 'dark' ? `hover:bg-gray-700/50 ${index % 2 === 0 ? 'bg-gray-800' : 'bg-gray-800/50'}` : `hover:bg-blue-50/50 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}`}>
+                                    <tr key={user.id} className={`transition-colors duration-150 ${theme === 'dark' ? 'hover:bg-gray-700/50 bg-gray-800' : 'hover:bg-blue-50/50 bg-white'}`}>
                                       <td className={`py-4 px-6 text-center border-r ${theme === 'dark' ? 'border-gray-600' : 'border-gray-100'}`}>
                                         {user.profile_image ? (
                                           <img
@@ -555,7 +553,7 @@ const AccountManagement = () => {
                                         </div>
                                       </td>
                                       <td className={`py-4 px-6 text-center border-r print:hidden ${theme === 'dark' ? 'border-gray-600' : 'border-gray-100'}`}>
-                                        <Badge className={getRoleBadgeColor(user.role)}>
+                                        <Badge className={`${getRoleBadgeColor(user.role)} rounded-[5px]`}>
                                           <div className="flex items-center gap-1">
                                             {getRoleIcon(user.role)}
                                             {user.role}
@@ -577,7 +575,7 @@ const AccountManagement = () => {
                                         </div>
                                       </td>
                                       <td className={`py-4 px-6 text-center border-r print:hidden ${theme === 'dark' ? 'border-gray-600' : 'border-gray-100'}`}>
-                                        <Badge variant={user.status === 'active' ? 'default' : 'secondary'}>
+                                        <Badge className={`${user.status === 'active' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'} rounded-[5px]`}>
                                           {user.status}
                                         </Badge>
                                       </td>
@@ -588,30 +586,35 @@ const AccountManagement = () => {
                                         </div>
                                       </td>
                                       <td className="py-4 px-6 text-center print:hidden">
-                                        <ActionMenu
-                                          items={[
-                                            {
-                                              id: 'view',
-                                              label: 'View',
-                                              icon: Eye,
-                                              onClick: () => openViewDialog(user)
-                                            },
-                                            {
-                                              id: 'edit',
-                                              label: 'Edit',
-                                              icon: Edit,
-                                              onClick: () => openEditDialog(user)
-                                            },
-                                            {
-                                              id: 'delete',
-                                              label: 'Delete User',
-                                              icon: Trash2,
-                                              onClick: () => handleDelete(user.id),
-                                              isDelete: true,
-                                              confirmMessage: `Are you sure you want to delete ${user.full_name}? This action cannot be undone.`
-                                            }
-                                          ]}
-                                        />
+                                        <div className="flex items-center justify-center gap-1">
+                                          <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => openViewDialog(user)}
+                                            className={`h-8 w-8 p-0 ${theme === 'dark' ? 'border-gray-600 hover:bg-gray-700' : ''}`}
+                                            title="View User"
+                                          >
+                                            <Eye className="h-4 w-4" />
+                                          </Button>
+                                          <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => openEditDialog(user)}
+                                            className={`h-8 w-8 p-0 ${theme === 'dark' ? 'border-gray-600 hover:bg-gray-700' : ''}`}
+                                            title="Edit User"
+                                          >
+                                            <Edit className="h-4 w-4" />
+                                          </Button>
+                                          <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => handleDelete(user.id)}
+                                            className={`h-8 w-8 p-0 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700`}
+                                            title="Delete User"
+                                          >
+                                            <Trash2 className="h-4 w-4" />
+                                          </Button>
+                                        </div>
                                       </td>
                                     </tr>
                                   ))}
@@ -653,40 +656,45 @@ const AccountManagement = () => {
                                   )}
                                 </div>
                               </div>
-                              <ActionMenu
-                                items={[
-                                  {
-                                    id: 'view',
-                                    label: 'View',
-                                    icon: Eye,
-                                    onClick: () => openViewDialog(user)
-                                  },
-                                  {
-                                    id: 'edit',
-                                    label: 'Edit',
-                                    icon: Edit,
-                                    onClick: () => openEditDialog(user)
-                                  },
-                                  {
-                                    id: 'delete',
-                                    label: 'Delete User',
-                                    icon: Trash2,
-                                    onClick: () => handleDelete(user.id),
-                                    isDelete: true,
-                                    confirmMessage: `Are you sure you want to delete ${user.full_name}? This action cannot be undone.`
-                                  }
-                                ]}
-                              />
+                              <div className="flex items-center gap-1">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => openViewDialog(user)}
+                                  className={`h-8 w-8 p-0 ${theme === 'dark' ? 'border-gray-600 hover:bg-gray-700' : ''}`}
+                                  title="View User"
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => openEditDialog(user)}
+                                  className={`h-8 w-8 p-0 ${theme === 'dark' ? 'border-gray-600 hover:bg-gray-700' : ''}`}
+                                  title="Edit User"
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleDelete(user.id)}
+                                  className={`h-8 w-8 p-0 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700`}
+                                  title="Delete User"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </div>
                             <div className={`flex items-center justify-between mt-4 pt-4 border-t ${theme === 'dark' ? 'border-gray-700' : 'border-gray-100'}`}>
                               <div className="flex items-center gap-2">
-                                <Badge className={getRoleBadgeColor(user.role)}>
+                                <Badge className={`${getRoleBadgeColor(user.role)} rounded-[5px]`}>
                                   <div className="flex items-center gap-1">
                                     {getRoleIcon(user.role)}
                                     {user.role}
                                   </div>
                                 </Badge>
-                                <Badge variant={user.status === 'active' ? 'default' : 'secondary'}>
+                                <Badge className={`${user.status === 'active' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'} rounded-[5px]`}>
                                   {user.status}
                                 </Badge>
                               </div>
@@ -751,7 +759,7 @@ const AccountManagement = () => {
                           <CardContent className="space-y-3">
                             <div className="flex justify-between">
                               <span className={`text-sm ${theme === 'dark' ? 'text-gray-300' : ''}`}>Role:</span>
-                              <Badge className={getRoleBadgeColor(selectedUser.role)}>
+                              <Badge className={`${getRoleBadgeColor(selectedUser.role)} rounded-[5px]`}>
                                 <div className="flex items-center gap-1">
                                   {getRoleIcon(selectedUser.role)}
                                   {selectedUser.role}
@@ -760,7 +768,7 @@ const AccountManagement = () => {
                             </div>
                             <div className="flex justify-between">
                               <span className={`text-sm ${theme === 'dark' ? 'text-gray-300' : ''}`}>Status:</span>
-                              <Badge variant={selectedUser.status === 'active' ? 'default' : 'secondary'}>
+                              <Badge className={`${selectedUser.status === 'active' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'} rounded-[5px]`}>
                                 {selectedUser.status}
                               </Badge>
                             </div>
@@ -851,8 +859,8 @@ const AccountManagement = () => {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="staff">Staff</SelectItem>
                           <SelectItem value="admin">Admin</SelectItem>
+                          <SelectItem value="client">Client</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -955,8 +963,8 @@ const AccountManagement = () => {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="staff">Staff</SelectItem>
                           <SelectItem value="admin">Admin</SelectItem>
+                          <SelectItem value="client">Client</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>

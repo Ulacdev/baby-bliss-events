@@ -1,60 +1,27 @@
 <?php
 error_reporting(E_ALL);
-ini_set('display_errors', 0);
+ini_set('display_errors', 0); // Disable display_errors to prevent HTML error output
 ini_set('log_errors', 1);
 
-// Set JSON header first, before any other output
+// Only set headers and handle OPTIONS if not running from CLI
 if (php_sapi_name() !== 'cli') {
-    header('Content-Type: application/json; charset=utf-8');
-}
-
-// CORS handling - respond with specific Origin when present
-if (php_sapi_name() !== 'cli') {
-    // Use the request Origin when available. Browsers will reject credentialed
-    // requests if Access-Control-Allow-Origin is '*', so echo the origin.
-    $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
-
-    if ($origin) {
-        header('Access-Control-Allow-Origin: ' . $origin);
-        header('Vary: Origin');
-        header('Access-Control-Allow-Credentials: true');
-    } else {
-        // Fallback for tools or direct access
-        header('Access-Control-Allow-Origin: *');
-    }
-
-    header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS, PATCH');
-    header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
-    header('Access-Control-Max-Age: 86400');
+    header('Content-Type: application/json');
+    // CORS headers are handled by .htaccess file
+    // header('Access-Control-Allow-Origin: *');
+    // header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+    // header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
     // Handle preflight OPTIONS request
-    if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-        http_response_code(200);
+    if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
         exit(0);
     }
 }
 
 // Database configuration
-if (getenv('MYSQLHOST')) {
-    // Railway MySQL environment variables
-    define('DB_HOST', getenv('MYSQLHOST'));
-    define('DB_USER', getenv('MYSQLUSER'));
-    define('DB_PASS', getenv('MYSQLPASSWORD'));
-    define('DB_NAME', getenv('MYSQL_DATABASE'));
-} elseif (getenv('DATABASE_URL')) {
-    // Fallback for other providers
-    $url = parse_url(getenv('DATABASE_URL'));
-    define('DB_HOST', $url['host']);
-    define('DB_USER', $url['user']);
-    define('DB_PASS', $url['pass']);
-    define('DB_NAME', ltrim($url['path'], '/'));
-} else {
-    // InfinityFree database configuration
-    define('DB_HOST', 'sql100.infinityfree.com');
-    define('DB_USER', 'if0_40697563');
-    define('DB_PASS', 'nEedRr5f39Aby');
-    define('DB_NAME', 'if0_40697563_baby_bliss');
-}
+define('DB_HOST', 'localhost');
+define('DB_USER', 'root');
+define('DB_PASS', '');
+define('DB_NAME', 'baby_bliss');
 
 // Create database connection
 function getDBConnection()
@@ -227,7 +194,7 @@ function authenticateWithToken()
 
     // Check token in users table
     $conn = getDBConnection();
-    $stmt = $conn->prepare("SELECT id, email, session_expires FROM users WHERE session_token = ? AND session_expires > NOW()");
+    $stmt = $conn->prepare("SELECT id, email, role, session_expires FROM users WHERE session_token = ? AND session_expires > NOW()");
     $stmt->bind_param("s", $token);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -243,7 +210,8 @@ function authenticateWithToken()
 
     return [
         'user_id' => $user['id'],
-        'email' => $user['email']
+        'email' => $user['email'],
+        'role' => $user['role']
     ];
 }
 

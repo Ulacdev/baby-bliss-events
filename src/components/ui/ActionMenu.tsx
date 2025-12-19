@@ -1,9 +1,9 @@
+  import React, { useState, useRef } from "react";
   import { MoreVertical } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { useState, useRef } from "react";
-import { useTheme } from "@/contexts/ThemeContext";
+  import { Button } from "@/components/ui/button";
+  import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+  import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+  import { useTheme } from "@/contexts/ThemeContext";
 
 interface ActionMenuProps {
   items: {
@@ -11,42 +11,44 @@ interface ActionMenuProps {
     label: string;
     icon: any;
     onClick: () => void;
-    color?: string;
     disabled?: boolean;
     isDelete?: boolean;
     confirmMessage?: string;
   }[];
-  className?: string;
 }
 
-export function ActionMenu({ items, className }: ActionMenuProps) {
+export function ActionMenu({ items }: ActionMenuProps) {
   const { theme } = useTheme();
   const [openDialog, setOpenDialog] = useState<string | null>(null);
   const [deleteInProgress, setDeleteInProgress] = useState(false);
   const dropdownRef = useRef<any>(null);
 
   return (
-    <DropdownMenu modal={false}>
+    <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className={`h-8 w-8 ${theme === 'dark' ? 'p-1 hover:bg-gray-700' : 'p-0'} ${className}`}>
+        <Button
+          variant="ghost"
+          className={`h-8 w-8 flex items-center justify-center ${theme === 'dark' ? 'p-1 hover:bg-gray-700' : 'p-0 hover:bg-gray-100'}`}
+          onClick={(e) => { e.stopPropagation(); }}
+        >
           <MoreVertical className={`h-4 w-4 ${theme === 'dark' ? 'text-gray-400' : ''}`} />
           <span className="sr-only">Open menu</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className={`w-56 shadow-cyber-ocean border-0 backdrop-blur-xl ${theme === 'dark' ? 'bg-gray-900/95 border-gray-700' : 'bg-white/95'}`} align="center" forceMount>
+      <DropdownMenuContent className={`min-w-48 w-auto shadow-lg border rounded-lg z-50 transition-all duration-200 ${theme === 'dark' ? 'bg-gray-800 border-gray-700 shadow-gray-900/50' : 'bg-white border-gray-200 shadow-gray-300/50'}`} align="end">
         {items.map((item) => {
           if (item.isDelete && item.confirmMessage) {
             return (
-              <div key={`alert-${item.id}`}>
+              <React.Fragment key={`alert-${item.id}`}>
                 <DropdownMenuItem
-                  className={`px-3 py-2 text-red-600 focus:text-red-600 ${theme === 'dark' ? 'bg-gray-800 hover:bg-gray-700 focus:bg-gray-700' : 'bg-gray-50 hover:bg-gray-100 focus:bg-gray-100'} ${item.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  className={`text-red-600 focus:text-red-600 ${item.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
                   disabled={item.disabled}
-                  onSelect={(e) => {
+                  onClick={(e) => {
                     e.preventDefault();
                     setOpenDialog(item.id);
                   }}
                 >
-                  {item.icon && <item.icon className="mr-2 h-3.5 w-3.5" />}
+                  {item.icon && <item.icon className="mr-2.5 h-4 w-4" />}
                   <span>{item.label}</span>
                 </DropdownMenuItem>
 
@@ -71,7 +73,7 @@ export function ActionMenu({ items, className }: ActionMenuProps) {
                           setDeleteInProgress(true);
                           try {
                             await item.onClick();
-                            // Dialog stays open - user must click Cancel to close
+                            setOpenDialog(null); // Close dialog on success
                           } finally {
                             setDeleteInProgress(false);
                           }
@@ -84,7 +86,7 @@ export function ActionMenu({ items, className }: ActionMenuProps) {
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
-              </div>
+              </React.Fragment>
             );
           }
 
@@ -96,13 +98,14 @@ export function ActionMenu({ items, className }: ActionMenuProps) {
                 item.onClick();
               }}
               disabled={item.disabled}
-              className={`px-3 py-2 ${theme === 'dark' ? 'bg-gray-800 hover:bg-gray-700 focus:bg-gray-700' : 'bg-gray-50 hover:bg-gray-100 focus:bg-gray-100'} ${item.color ? item.color : ''}`}
+              className={`${item.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              {item.icon && <item.icon className={`mr-2 h-3.5 w-3.5 ${item.color ? 'text-' + item.color.replace('text-', '') : ''}`} />}
+              {item.icon && <item.icon className="mr-2.5 h-4 w-4" />}
               <span>{item.label}</span>
             </DropdownMenuItem>
           );
-        })}</DropdownMenuContent>
+        })}
+      </DropdownMenuContent>
     </DropdownMenu>
   );
 }
