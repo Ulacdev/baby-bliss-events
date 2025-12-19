@@ -1,4 +1,4 @@
-FROM php:8.2-cli
+FROM php:8.2-apache
 
 # Install system dependencies and PHP extensions
 RUN apt-get update && apt-get install -y \
@@ -7,12 +7,17 @@ RUN apt-get update && apt-get install -y \
     libfreetype6-dev \
     libzip-dev \
     unzip \
-    nginx \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install gd zip pdo pdo_mysql mysqli
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Enable Apache rewrite module
+RUN a2enmod rewrite
+
+# Configure Apache to listen on the PORT environment variable
+RUN echo "Listen \${PORT:-80}" > /etc/apache2/ports.conf
 
 # Set working directory
 WORKDIR /var/www/html
@@ -23,28 +28,14 @@ COPY api/ /var/www/html/
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# Copy nginx configuration
-COPY --from=nginx:alpine /etc/nginx/nginx.conf /etc/nginx/nginx.conf
-COPY --from=nginx:alpine /etc/nginx/conf.d /etc/nginx/conf.d
-
-# Create nginx config for PHP
-RUN echo 'server {\
-    listen 80;\
-    server_name localhost;\
-    root /var/www/html;\
-    index index.php;\
-    \
-    location / {\
-        try_files $uri $uri/ /index.php?$query_string;\
-    }\
-    \
-    location ~ \.php$ {\
-        fastcgi_pass 127.0.0.1:9000;\
-        fastcgi_index index.php;\
-        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;\
-        include fastcgi_params;\
-    }\
-}' > /etc/nginx/conf.d/default.conf
+# Create Apache virtual host config
+RUN echo '<VirtualHost *:\${PORT:-80}>\n\
+    DocumentRoot /var/www/html\n\
+    <Directory /var/www/html>\n\
+        AllowOverride All\n\
+        Require all granted\n\
+    </Directory>\n\
+</VirtualHost>' > /etc/apache2/sites-available/000-default.conf
 
 # Set proper permissions
 RUN chown -R www-data:www-data /var/www/html \
@@ -53,5 +44,5 @@ RUN chown -R www-data:www-data /var/www/html \
 # Expose port
 EXPOSE $PORT
 
-# Start PHP built-in server
-CMD php -S 0.0.0.0:${PORT:-80} -t /var/www/html
+# Start Apache
+CMD ["apache2-foreground"]
