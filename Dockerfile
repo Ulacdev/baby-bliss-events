@@ -1,4 +1,4 @@
-FROM php:8.1-apache
+FROM php:8.2-apache
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -13,20 +13,26 @@ RUN apt-get update && apt-get install -y \
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
 
+# Configure Apache to use prefork MPM only
+RUN a2dismod mpm_event mpm_worker && a2enmod mpm_prefork
+
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy PHP files
-COPY api/ /var/www/html/api/
-COPY public/ /var/www/html/public/
+# Copy application code
+COPY api/ /var/www/html/
 
-# Create uploads directory
-RUN mkdir -p /var/www/html/uploads && chmod 777 /var/www/html/uploads
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copy Apache config
-RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
+# Install PHP dependencies
+RUN composer install --no-dev --optimize-autoloader
 
-# Expose port
+# Set proper permissions
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html
+
+# Expose port 80
 EXPOSE 80
 
 # Start Apache
