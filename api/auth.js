@@ -1,15 +1,16 @@
-const mysql = require('mysql2/promise');
+const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 // Database configuration
-const dbConfig = {
+const pool = new Pool({
   host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'root',
+  user: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || '',
   database: process.env.DB_NAME || 'baby_bliss',
-  port: process.env.DB_PORT || 3306,
-};
+  port: process.env.DB_PORT || 5432,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+});
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -19,19 +20,16 @@ export default async function handler(req, res) {
   const { action } = req.query;
 
   try {
-    const connection = await mysql.createConnection(dbConfig);
-
     if (action === 'login') {
       const { email, password } = req.body;
 
       // Get user from database
-      const [users] = await connection.execute(
-        'SELECT id, email, password, first_name, last_name, role FROM users WHERE email = ? AND status = "active"',
-        [email]
+      const { rows: users } = await pool.query(
+        'SELECT id, email, password, first_name, last_name, role FROM users WHERE email = $1 AND status = $2',
+        [email, 'active']
       );
 
       if (users.length === 0) {
-        await connection.end();
         return res.status(401).json({ error: 'Invalid credentials' });
       }
 
@@ -40,7 +38,6 @@ export default async function handler(req, res) {
       // Check password
       const isValidPassword = await bcrypt.compare(password, user.password);
       if (!isValidPassword) {
-        await connection.end();
         return res.status(401).json({ error: 'Invalid credentials' });
       }
 
@@ -51,7 +48,6 @@ export default async function handler(req, res) {
         { expiresIn: '24h' }
       );
 
-      await connection.end();
       res.json({
         user: {
           id: user.id,
@@ -67,7 +63,6 @@ export default async function handler(req, res) {
       // Verify token from Authorization header
       const authHeader = req.headers.authorization;
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        await connection.end();
         return res.json({ user: null, session: null });
       }
 
@@ -75,12 +70,10 @@ export default async function handler(req, res) {
       try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
 
-        const [users] = await connection.execute(
-          'SELECT id, email, first_name, last_name, role FROM users WHERE id = ? AND status = "active"',
-          [decoded.id]
+        const { rows: users } = await pool.query(
+          'SELECT id, email, first_name, last_name, role FROM users WHERE id = $1 AND status = $2',
+          [decoded.id, 'active']
         );
-
-        await connection.end();
 
         if (users.length === 0) {
           return res.json({ user: null, session: null });
@@ -99,11 +92,9 @@ export default async function handler(req, res) {
           }
         });
       } catch (error) {
-        await connection.end();
         res.json({ user: null, session: null });
       }
     } else {
-      await connection.end();
       res.status(400).json({ error: 'Invalid action' });
     }
   } catch (error) {

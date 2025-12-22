@@ -1,13 +1,14 @@
-const mysql = require('mysql2/promise');
+const { Pool } = require('pg');
 
 // Database configuration
-const dbConfig = {
+const pool = new Pool({
   host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'root',
+  user: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || '',
   database: process.env.DB_NAME || 'baby_bliss',
-  port: process.env.DB_PORT || 3306,
-};
+  port: process.env.DB_PORT || 5432,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+});
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -15,11 +16,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const connection = await mysql.createConnection(dbConfig);
-
-    const [settings] = await connection.execute('SELECT setting_key, setting_value FROM settings');
-
-    await connection.end();
+    const { rows: settings } = await pool.query('SELECT setting_key, setting_value FROM settings');
 
     const settingsObj = {};
     settings.forEach(setting => {

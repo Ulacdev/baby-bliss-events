@@ -1,13 +1,14 @@
-const mysql = require('mysql2/promise');
+const { Pool } = require('pg');
 
 // Database configuration
-const dbConfig = {
+const pool = new Pool({
   host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'root',
+  user: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || '',
   database: process.env.DB_NAME || 'baby_bliss',
-  port: process.env.DB_PORT || 3306,
-};
+  port: process.env.DB_PORT || 5432,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+});
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -15,26 +16,22 @@ export default async function handler(req, res) {
   }
 
   try {
-    const connection = await mysql.createConnection(dbConfig);
-
     // Get booking statistics
-    const [statsResult] = await connection.execute(`
+    const { rows: statsResult } = await pool.query(`
       SELECT
         COUNT(*) as total_bookings,
         SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending_bookings,
         SUM(CASE WHEN status = 'confirmed' THEN 1 ELSE 0 END) as confirmed_bookings,
         SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) as cancelled_bookings,
-        SUM(CASE WHEN MONTH(created_at) = MONTH(CURRENT_DATE()) AND YEAR(created_at) = YEAR(CURRENT_DATE()) THEN 1 ELSE 0 END) as monthly_bookings,
-        SUM(CASE WHEN event_date >= CURRENT_DATE() THEN 1 ELSE 0 END) as upcoming_events
+        SUM(CASE WHEN EXTRACT(MONTH FROM created_at) = EXTRACT(MONTH FROM CURRENT_DATE) AND EXTRACT(YEAR FROM created_at) = EXTRACT(YEAR FROM CURRENT_DATE) THEN 1 ELSE 0 END) as monthly_bookings,
+        SUM(CASE WHEN event_date >= CURRENT_DATE THEN 1 ELSE 0 END) as upcoming_events
       FROM bookings
     `);
-
-    await connection.end();
 
     const stats = statsResult[0];
 
     // Calculate estimated revenue (assuming $50 per guest)
-    const estimatedRevenue = stats.upcoming_events * 50;
+    const estimatedRevenue = parseInt(stats.upcoming_events) * 50;
 
     res.json({
       stats: {

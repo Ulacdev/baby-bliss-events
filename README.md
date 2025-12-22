@@ -102,9 +102,9 @@ npm run dev
 This project is built with:
 
 - **Frontend**: React + TypeScript + Vite + shadcn-ui + Tailwind CSS
-- **Backend**: Node.js + Express + MySQL + JWT Authentication
-- **Database**: MySQL (PlanetScale/Railway compatible)
-- **Deployment**: Vercel (Frontend + API routes)
+- **Backend**: Node.js + Vercel API Routes + PostgreSQL + JWT Authentication
+- **Database**: PostgreSQL (Supabase/Neon/Vercel compatible)
+- **Deployment**: Vercel (Frontend + Serverless API routes)
 
 ## How can I deploy this project?
 
