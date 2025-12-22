@@ -70,11 +70,11 @@ const Navbar = () => {
   const shouldBeWhite = (hasHeroSection && isScrolled);
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${shouldBeOceanBlue ? 'bg-[#006994]/70 backdrop-blur-sm shadow-md' : shouldBeWhite ? 'bg-white/90 backdrop-blur-sm shadow-md' : ''}`}>
+    <nav className={`fixed top-0 left-0 right-0 z-50 ${shouldBeOceanBlue ? 'bg-[#006994]/70 backdrop-blur-sm shadow-md' : shouldBeWhite ? 'bg-white/90 backdrop-blur-sm shadow-md' : ''}`}>
       <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo - Left Corner */}
-          <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity overflow-hidden animate-fade-in-delay-1">
+          <Link to="/" className="flex items-center gap-2 hover:opacity-80 overflow-hidden animate-fade-in-delay-1">
             {settings.general_logo_url ? (
               <img src={settings.general_logo_url} alt="Logo" className={`object-contain`} style={{ height: `${settings.general_logo_size}px`, width: `${settings.general_logo_size}px` }} />
             ) : (
@@ -85,19 +85,19 @@ const Navbar = () => {
 
           {/* Navigation Links & Login - Right Corner */}
           <div className="hidden md:flex items-center gap-6 ml-auto">
-            <Link to="/" className="navbar-link-hover text-white drop-shadow-lg hover:text-white text-base font-medium transition-all duration-300 animate-fade-in-delay-1 relative pb-1">
+            <Link to="/" className="navbar-link-hover text-white drop-shadow-lg hover:text-white text-base font-medium animate-fade-in-delay-1 relative pb-1">
               {settings.navbar_nav_home_text}
             </Link>
-            <Link to="/about" className="navbar-link-hover text-white drop-shadow-lg hover:text-white text-base font-medium transition-all duration-300 animate-fade-in-delay-2 relative pb-1">
+            <Link to="/about" className="navbar-link-hover text-white drop-shadow-lg hover:text-white text-base font-medium animate-fade-in-delay-2 relative pb-1">
               {settings.navbar_nav_about_text}
             </Link>
-            <Link to="/gallery" className="navbar-link-hover text-white drop-shadow-lg hover:text-white text-base font-medium transition-all duration-300 animate-fade-in-delay-3 relative pb-1">
+            <Link to="/gallery" className="navbar-link-hover text-white drop-shadow-lg hover:text-white text-base font-medium animate-fade-in-delay-3 relative pb-1">
               {settings.navbar_nav_gallery_text}
             </Link>
-            <Link to="/book" className="navbar-link-hover text-white drop-shadow-lg hover:text-white text-base font-medium transition-all duration-300 animate-fade-in-delay-1 relative pb-1">
+            <Link to="/book" className="navbar-link-hover text-white drop-shadow-lg hover:text-white text-base font-medium animate-fade-in-delay-1 relative pb-1">
               {settings.navbar_nav_book_text}
             </Link>
-            <Link to="/contact" className="navbar-link-hover text-white drop-shadow-lg hover:text-white text-base font-medium transition-all duration-300 animate-fade-in-delay-2 relative pb-1">
+            <Link to="/contact" className="navbar-link-hover text-white drop-shadow-lg hover:text-white text-base font-medium animate-fade-in-delay-2 relative pb-1">
               {settings.navbar_nav_contact_text}
             </Link>
             <Link to={session ? "/admin" : "/auth"} className="animate-fade-in-delay-3">

@@ -9,8 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { MessageSquare, Search, Star, Trash2, Eye, Mail, Activity, ArrowUpIcon, ArrowDownIcon, Users, Clock, CheckCircle, Inbox, MoreVertical, Filter, Printer, Download, Archive, Calendar } from "lucide-react";
 import { ActionMenu } from "@/components/ui/ActionMenu";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { useSidebar } from "@/hooks/use-sidebar";
 import { api } from "@/integrations/api/client";
@@ -32,6 +34,7 @@ const Messages = () => {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [monthFilter, setMonthFilter] = useState<string>('');
+  const [selectedMessages, setSelectedMessages] = useState<number[]>([]);
 
   useEffect(() => {
     loadMessages();
@@ -93,6 +96,22 @@ const Messages = () => {
     setSelectedMessage(message);
     if (message.status === 'unread') {
       handleMarkAsRead(message.id);
+    }
+  };
+
+  const handleSelectMessage = (messageId: number, checked: boolean) => {
+    if (checked) {
+      setSelectedMessages(prev => [...prev, messageId]);
+    } else {
+      setSelectedMessages(prev => prev.filter(id => id !== messageId));
+    }
+  };
+
+  const handleSelectAllMessages = (checked: boolean) => {
+    if (checked) {
+      setSelectedMessages(filteredMessages.map(message => message.id));
+    } else {
+      setSelectedMessages([]);
     }
   };
 
@@ -456,6 +475,38 @@ const Messages = () => {
                   <Filter className={`h-4 w-4 mr-2 ${theme === 'dark' ? 'text-white' : ''}`} />
                   Clear Filters
                 </Button>
+                {selectedMessages.length > 0 && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" size="sm" title="Delete Selected">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Selected Messages</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete {selectedMessages.length} selected message(s)? This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={async () => {
+                          try {
+                            for (const id of selectedMessages) {
+                              await api.deleteMessage(id, 'Bulk delete by admin');
+                            }
+                            toast({ title: "Success", description: "Selected messages deleted successfully" });
+                            loadMessages();
+                            setSelectedMessages([]);
+                          } catch (error) {
+                            toast({ variant: "destructive", title: "Error", description: "Failed to delete messages" });
+                          }
+                        }}>Delete</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
               </div>
             </div>
 
@@ -478,11 +529,17 @@ const Messages = () => {
                       <p className="text-gray-500">Loading messages...</p>
                     </div>
                   ) : filteredMessages.length === 0 ? (
-                    <div className="text-center py-8">
-                      <Mail className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                      <p className={`text-gray-500 ${theme === 'dark' ? 'dark:text-gray-300' : ''}`}>No messages found</p>
-                      <p className={`text-sm text-gray-400 ${theme === 'dark' ? 'dark:text-gray-300' : ''}`}>Customer messages will appear here</p>
-                    </div>
+                    <tr>
+                      <td colSpan={7} className={`text-center py-8 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                        <div className="flex justify-center items-center">
+                          <Mail className="h-12 w-12 text-gray-400 mr-4" />
+                          <div>
+                            <p>No messages found</p>
+                            <p className="text-sm">Customer messages will appear here</p>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
                   ) : (
                     <div className={`border rounded-lg overflow-hidden table-to-print ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}>
                       <div className="hidden print:block text-center py-4 border-b border-gray-200">
@@ -493,6 +550,12 @@ const Messages = () => {
                         <table className="w-full table-fixed">
                           <thead className={`border-b-2 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'}`}>
                             <tr>
+                              <th className={`w-12 text-center py-4 px-6 font-bold sticky top-0 border ${theme === 'dark' ? 'text-gray-200 bg-gray-800 border-gray-700' : 'text-gray-800 bg-gray-50 border-gray-200'}`}>
+                                <Checkbox
+                                  checked={selectedMessages.length === filteredMessages.length && filteredMessages.length > 0}
+                                  onCheckedChange={(checked) => handleSelectAllMessages(checked as boolean)}
+                                />
+                              </th>
                               <th className={`w-1/6 text-left py-4 px-6 font-bold sticky top-0 cursor-pointer hover:bg-gray-100 select-none border-r ${theme === 'dark' ? 'text-gray-200 bg-gray-800 hover:bg-gray-700 border-gray-700' : 'text-gray-800 bg-gray-50 hover:bg-gray-100 border-gray-200'}`} onClick={() => handleSort('name')}>
                                 <div className="flex items-center justify-between">
                                   <span>Name</span>
@@ -535,6 +598,12 @@ const Messages = () => {
                           <tbody className={`divide-y ${theme === 'dark' ? 'divide-gray-700' : 'divide-gray-200'}`}>
                             {filteredMessages.map((message, index) => (
                               <tr key={message.id} className={`transition-colors duration-150 ${theme === 'dark' ? `hover:bg-gray-700/50 ${index % 2 === 0 ? 'bg-gray-900' : 'bg-gray-800/30'}` : `hover:bg-blue-50/50 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}`}>
+                                <td className={`py-4 px-6 text-center border-r ${theme === 'dark' ? 'border-gray-700' : 'border-gray-100'}`}>
+                                  <Checkbox
+                                    checked={selectedMessages.includes(message.id)}
+                                    onCheckedChange={(checked) => handleSelectMessage(message.id, checked as boolean)}
+                                  />
+                                </td>
                                 <td className={`py-4 px-6 font-semibold border-r ${theme === 'dark' ? 'text-gray-200 border-gray-700' : 'text-gray-900 border-gray-100'}`}>{message.name}</td>
                                 <td className={`py-4 px-6 border-r ${theme === 'dark' ? 'text-white border-gray-700' : 'text-gray-700 border-gray-100'}`}>
                                   <div className="flex items-center gap-2">

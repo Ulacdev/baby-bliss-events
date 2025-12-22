@@ -16,7 +16,11 @@ import {
   Activity,
   ChevronLeft,
   ChevronRight,
-  User
+  User,
+  Home,
+  DollarSign,
+  Settings,
+  House
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { api } from "@/integrations/api/client";
@@ -28,6 +32,7 @@ import { Input } from "@/components/ui/input";
 const menuSections = [
   {
     title: "MAIN",
+    icon: Home,
     items: [
       { name: "Dashboard", icon: LayoutDashboard, path: "/admin" },
       { name: "Calendar", icon: Calendar, path: "/admin/calendar" },
@@ -35,6 +40,7 @@ const menuSections = [
   },
   {
     title: "MANAGEMENT",
+    icon: Users,
     items: [
       { name: "Accounts", icon: Shield, path: "/admin/accounts" },
       { name: "Clients", icon: Users, path: "/admin/clients" },
@@ -43,6 +49,7 @@ const menuSections = [
   },
   {
     title: "FINANCE",
+    icon: DollarSign,
     items: [
       { name: "Financial", icon: Wallet, path: "/admin/financial" },
       { name: "Reports", icon: FileBarChart, path: "/admin/reports" },
@@ -50,6 +57,7 @@ const menuSections = [
   },
   {
     title: "COMMUNICATION",
+    icon: MessageSquare,
     items: [
       { name: "Messages", icon: MessageSquare, path: "/admin/messages" },
     ]
@@ -57,6 +65,7 @@ const menuSections = [
   // Profile is accessed via the header dropdown; remove from sidebar
   {
     title: "SYSTEM",
+    icon: Settings,
     items: [
       { name: "Archive", icon: Archive, path: "/admin/archive" },
     ]
@@ -193,10 +202,16 @@ const AdminSidebar = ({ isCollapsed = false, onToggleSidebar, onHoverChange }: {
       toast({
         title: "Logged out",
         description: "You have been successfully logged out.",
+        variant: "success",
       });
       navigate("/");
     } catch (error) {
       console.error("Logout error:", error);
+      toast({
+        title: "Logout failed",
+        description: "An error occurred while logging out.",
+        variant: "destructive",
+      });
       localStorage.removeItem('auth_token');
       navigate("/");
     }
@@ -245,8 +260,10 @@ const AdminSidebar = ({ isCollapsed = false, onToggleSidebar, onHoverChange }: {
       {/* Header and Menu Section - Both visible/hidden together */}
       <div
         className={cn(
-          "fixed left-0 top-0 h-full z-40 border-r transition-all duration-300 flex flex-col",
-          theme === 'dark' ? 'bg-gray-800 text-gray-100 border-gray-700' : 'bg-white text-gray-900 border-gray-200',
+          "fixed left-0 top-0 h-full z-40 border-r transition-all duration-300 flex flex-col shadow-lg",
+          theme === 'dark'
+            ? 'bg-gray-900 text-gray-100 border-gray-700'
+            : 'bg-white text-gray-900 border-gray-200',
           "md:translate-x-0 md:opacity-100",
           isOpen ? "translate-x-0 w-64" : "-translate-x-full",
           (isCollapsed && !isHovering) ? "md:w-16 w-64" : "md:w-64 w-64"
@@ -256,9 +273,11 @@ const AdminSidebar = ({ isCollapsed = false, onToggleSidebar, onHoverChange }: {
       >
         {/* Sidebar Header - logo */}
         <div className={cn(
-          "flex items-center justify-center border-b-4 flex-shrink-0 h-20 transition-all duration-200",
-          isCollapsed ? 'w-16 px-2 border-r-4' : 'w-64 px-6 md:px-8 border-r-4',
-          theme === 'dark' ? 'bg-gray-900 border-gray-700 text-gray-100' : 'bg-white border-gray-200 text-gray-900'
+          "flex items-center justify-center border-b border-r flex-shrink-0 h-20 transition-all duration-200",
+          isCollapsed ? 'w-16 px-2' : 'w-64 px-6 md:px-8',
+          theme === 'dark'
+            ? 'bg-gray-800 border-gray-700 text-gray-100'
+            : 'bg-white border-gray-200 text-gray-900'
         )}>
           {/* Logo */}
           <Link to="/" className="cursor-pointer flex items-center justify-center flex-1">
@@ -288,17 +307,20 @@ const AdminSidebar = ({ isCollapsed = false, onToggleSidebar, onHoverChange }: {
             "flex flex-col",
             (isCollapsed && !isHovering) ? "mt-4 px-2" : "mt-8 px-4"
           )}>
-            {menuSections.map((section) => (
-              <div key={section.title} className="mb-4">
+            {menuSections.map((section, index) => (
+              <div key={section.title} className={cn("mb-8", index < menuSections.length - 1 && "border-b border-gray-100 dark:border-gray-800 pb-4")}>
                 {/* Section Header */}
                 {!(isCollapsed && !isHovering) && (
                   <div className={cn(
-                    "flex items-center px-4 py-2.5 text-[13px]",
-                    "rounded"
+                    "flex items-center gap-2 px-4 py-1"
                   )}>
+                    <section.icon size={20} className={cn(
+                      "flex-shrink-0 fill-current stroke-1 stroke-gray-200",
+                      theme === 'dark' ? 'text-gray-600' : 'text-gray-600'
+                    )} />
                     <span className={cn(
-                      "text-sm font-bold uppercase tracking-widest",
-                      theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                      "text-sm font-semibold uppercase tracking-wider",
+                      theme === 'dark' ? 'text-gray-500' : 'text-gray-500'
                     )}>
                       {section.title}
                     </span>
@@ -306,32 +328,32 @@ const AdminSidebar = ({ isCollapsed = false, onToggleSidebar, onHoverChange }: {
                 )}
 
                 {/* Menu Items */}
-                <div className="space-y-1 mt-2">
+                <div className="space-y-1 mt-3">
                   {section.items.map(({ name, icon: Icon, path }) => (
                     <button
                       key={name}
                       onClick={() => handleMenuClick({ name, icon: Icon, path })}
                       className={cn(
-                        "flex items-center rounded-none w-full text-left transition-all duration-200",
-                        (isCollapsed && !isHovering) ? "justify-center px-2 py-3" : "gap-3 px-4 py-2.5 text-base",
+                        "flex items-center rounded-[5px] w-full text-left transition-all duration-200",
+                        (isCollapsed && !isHovering) ? "justify-center px-2 py-2" : "gap-4 pl-12 pr-4 py-2 text-sm",
                           active === name
-                            ? "bg-blue-600 text-white font-semibold"
-                            : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 group"
+                            ? "bg-blue-600 text-white font-medium shadow-sm"
+                            : "text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 group"
                       )}
                       title={(isCollapsed && !isHovering) ? name : undefined}
                     >
-                      <Icon size={(isCollapsed && !isHovering) ? 20 : 18} className={cn(
-                        "flex-shrink-0 transition-colors duration-200",
+                      <Icon size={(isCollapsed && !isHovering) ? 24 : 20} className={cn(
+                        "flex-shrink-0 fill-current stroke-1 stroke-gray-200 transition-colors duration-200",
                         active === name
-                          ? 'text-white'
-                            : 'text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-300'
+                          ? 'text-white stroke-white'
+                            : 'text-gray-500 dark:text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-400'
                       )} />
                       {!(isCollapsed && !isHovering) && (
                         <span
                           className="truncate"
                           style={{
                             fontFamily: '"Segoe UI", sans-serif',
-                            fontWeight: active === name ? '600' : '500'
+                            fontWeight: active === name ? '500' : '400'
                           }}
                         >
                           {name}

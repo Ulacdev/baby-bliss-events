@@ -11,6 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ActionMenu } from "@/components/ui/ActionMenu";
 import { TrendingUp, TrendingDown, Wallet, Plus, Calendar, CheckCircle, XCircle, Printer, Download, Activity, ArrowUpIcon, ArrowDownIcon, BarChart3, PieChart, MoreVertical, Trash2, Filter, User, MapPin, Users } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart as RechartsPieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useToast } from "@/hooks/use-toast";
 import { useSidebar } from "@/hooks/use-sidebar";
@@ -29,6 +31,7 @@ const Financial = () => {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [paymentFilter, setPaymentFilter] = useState<string>('all');
   const [monthFilter, setMonthFilter] = useState<string>('');
+  const [selectedBookings, setSelectedBookings] = useState<number[]>([]);
 
   const packagePrices: { [key: string]: number } = {
     basic: 15000,
@@ -137,6 +140,22 @@ const Financial = () => {
         title: "Error",
         description: "Failed to mark payment as unpaid",
       });
+    }
+  };
+
+  const handleSelectBooking = (bookingId: number, checked: boolean) => {
+    if (checked) {
+      setSelectedBookings(prev => [...prev, bookingId]);
+    } else {
+      setSelectedBookings(prev => prev.filter(id => id !== bookingId));
+    }
+  };
+
+  const handleSelectAllBookings = (checked: boolean) => {
+    if (checked) {
+      setSelectedBookings(sortedBookings.map(booking => booking.id));
+    } else {
+      setSelectedBookings([]);
     }
   };
 
@@ -559,6 +578,39 @@ const Financial = () => {
                   <Filter className={`h-4 w-4 mr-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`} />
                   Clear Filters
                 </Button>
+                {selectedBookings.length > 0 && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" size="sm" title="Delete Selected">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Selected Bookings</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete {selectedBookings.length} selected booking(s)? This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={async () => {
+                          try {
+                            for (const id of selectedBookings) {
+                              await api.deleteBooking(id);
+                            }
+                            toast({ title: "Success", description: "Selected bookings deleted successfully" });
+                            loadBookings();
+                            loadPayments();
+                            setSelectedBookings([]);
+                          } catch (error) {
+                            toast({ variant: "destructive", title: "Error", description: "Failed to delete bookings" });
+                          }
+                        }}>Delete</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
               </div>
             </div>
 
@@ -577,6 +629,12 @@ const Financial = () => {
                     <table className="w-full table-fixed">
                       <thead className={`border-b-2 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'}`}>
                         <tr>
+                          <th className={`w-12 text-center py-4 px-6 font-bold sticky top-0 border ${theme === 'dark' ? 'text-gray-200 bg-gray-800 border-gray-600' : 'text-gray-800 bg-gray-100 border-gray-300'}`}>
+                            <Checkbox
+                              checked={selectedBookings.length === sortedBookings.length && sortedBookings.length > 0}
+                              onCheckedChange={(checked) => handleSelectAllBookings(checked as boolean)}
+                            />
+                          </th>
                           <th className={`w-1/6 text-left py-4 px-6 font-bold sticky top-0 cursor-pointer hover:bg-gray-100 select-none border-r ${theme === 'dark' ? 'text-gray-200 bg-gray-800 hover:bg-gray-700 border-gray-700' : 'text-gray-800 bg-gray-50 hover:bg-gray-100 border-gray-200'}`} onClick={() => handleSort('client')}>
                             <div className="flex items-center justify-between">
                               <span>Client</span>
@@ -619,13 +677,13 @@ const Financial = () => {
                       <tbody className={`divide-y ${theme === 'dark' ? 'divide-gray-700' : 'divide-gray-200'}`}>
                         {loading ? (
                           <tr>
-                            <td colSpan={7} className={`text-center py-8 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                            <td colSpan={8} className={`text-center py-8 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
                               Loading bookings...
                             </td>
                           </tr>
                         ) : bookings.length === 0 ? (
                           <tr>
-                            <td colSpan={7} className={`text-center py-8 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                            <td colSpan={8} className={`text-center py-8 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
                               No bookings with packages yet.
                             </td>
                           </tr>
@@ -635,6 +693,12 @@ const Financial = () => {
                             const amount = packagePrices[booking.package] || 0;
                             return (
                               <tr key={booking.id} className={`transition-colors duration-150 ${theme === 'dark' ? 'hover:bg-gray-700/50 bg-gray-800' : 'hover:bg-blue-50/50 bg-white'}`}>
+                                <td className={`py-4 px-6 text-center border-r ${theme === 'dark' ? 'border-gray-600' : 'border-gray-100'}`}>
+                                  <Checkbox
+                                    checked={selectedBookings.includes(booking.id)}
+                                    onCheckedChange={(checked) => handleSelectBooking(booking.id, checked as boolean)}
+                                  />
+                                </td>
                                 <td className={`py-4 px-6 font-semibold border-r ${theme === 'dark' ? 'text-gray-200 border-gray-700' : 'text-gray-900 border-gray-100'}`}>
                                   <div className="flex items-center gap-2">
                                     <User className={`h-4 w-4 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-400'}`} />

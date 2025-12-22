@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { ActionMenu } from "@/components/ui/ActionMenu";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Search, Plus, Loader2, Edit, Trash2, Eye, CalendarDays, Upload, X, Filter, Printer, Download, Calendar, MapPin, Users } from "lucide-react";
 import { api } from "@/integrations/api/client";
 import { useToast } from "@/hooks/use-toast";
@@ -58,6 +59,10 @@ const Bookings = () => {
 
   // Update loading state
   const [updatingBooking, setUpdatingBooking] = useState(false);
+  const [creatingBooking, setCreatingBooking] = useState(false);
+
+  // Bulk delete state
+  const [selectedBookings, setSelectedBookings] = useState<number[]>([]);
 
   useEffect(() => {
     loadBookings();
@@ -159,6 +164,8 @@ const Bookings = () => {
       return;
     }
 
+    setCreatingBooking(true);
+
     try {
       let imageUrlsJson = "";
       if (selectedImages.length > 0) {
@@ -193,6 +200,8 @@ const Bookings = () => {
         title: "Error",
         description: error?.message || "Failed to create booking",
       });
+    } finally {
+      setCreatingBooking(false);
     }
   };
 
@@ -207,9 +216,9 @@ const Bookings = () => {
       });
       return;
     }
-  
+
     setUpdatingBooking(true);
-  
+
     try {
       let imageUrlsJson = selectedBooking.images || "";
       if (selectedImages.length > 0) {
@@ -253,6 +262,8 @@ const Bookings = () => {
         title: "Error",
         description: error?.message || "Failed to update booking",
       });
+    } finally {
+      setUpdatingBooking(false);
     }
   };
 
@@ -274,6 +285,30 @@ const Bookings = () => {
       });
     }
   };
+
+  const handleSelectBooking = (id: number, checked: boolean) => {
+    setSelectedBookings(prev => {
+      if (checked) {
+        return [...prev, id];
+      } else {
+        return prev.filter(bookingId => bookingId !== id);
+      }
+    });
+  };
+
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedBookings(sortedBookings.map(booking => booking.id));
+    } else {
+      setSelectedBookings([]);
+    }
+  };
+
+  const clearSelection = () => {
+    setSelectedBookings([]);
+  };
+
 
   const openEditDialog = (booking: any) => {
     setSelectedBooking(booking);
@@ -519,13 +554,14 @@ const Bookings = () => {
                   onChange={(e) => handleSearch(e.target.value)}
                 />
               </div>
-              <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-[5px] shadow-sm">
-                    <Plus className="h-4 w-4 mr-2" />
-                    New Booking
-                  </Button>
-                </DialogTrigger>
+              <div className="flex gap-2">
+                <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-[5px] shadow-sm">
+                      <Plus className="h-4 w-4 mr-2" />
+                      New Booking
+                    </Button>
+                  </DialogTrigger>
                   <DialogContent className={`sm:max-w-[600px] max-h-[90vh] overflow-y-auto ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : ''}`}>
                     <DialogHeader>
                       <DialogTitle className={theme === 'dark' ? 'text-gray-100' : ''}>Create New Booking</DialogTitle>
@@ -687,52 +723,88 @@ const Bookings = () => {
                       <Button variant="outline" onClick={() => {setCreateDialogOpen(false); resetForm();}}>
                         Cancel
                       </Button>
-                      <Button onClick={handleCreate}>Create Booking</Button>
+                      <Button onClick={handleCreate} disabled={creatingBooking}>
+                        {creatingBooking && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                        Create Booking
+                      </Button>
                     </DialogFooter>
                   </DialogContent>
-                </Dialog>
-              </div>
+              </Dialog>
+            </div>
+            </div>
 
-              {/* Filters */}
-              <div className={`grid grid-cols-1 md:grid-cols-5 gap-4 mb-6 p-4 rounded-lg ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-50'}`}>
-                <div className="space-y-2">
-                  <Label className={theme === 'dark' ? 'text-white' : ''}>Status Filter</Label>
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className={theme === 'dark' ? 'bg-gray-700 border-gray-600 text-gray-100' : ''}>
-                      <SelectValue placeholder="All statuses" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Statuses</SelectItem>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="confirmed">Confirmed</SelectItem>
-                      <SelectItem value="cancelled">Cancelled</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label className={theme === 'dark' ? 'text-white' : ''}>Sort by Month</Label>
-                  <Input
-                    type="month"
-                    value={monthFilter}
-                    onChange={(e) => setMonthFilter(e.target.value)}
-                    className={theme === 'dark' ? 'bg-gray-700 border-gray-600 text-gray-100' : ''}
-                  />
-                </div>
-                <div className="flex items-end gap-2">
-                  <Button onClick={printReport} variant="outline" size="sm" title="Print" className={theme === 'dark' ? 'border-gray-600 hover:bg-gray-700 text-white' : ''}>
-                    <Printer className={`h-4 w-4 ${theme === 'dark' ? 'text-white' : ''}`} />
-                  </Button>
-                  <Button onClick={handleExportCSV} variant="outline" size="sm" title="Export CSV" className={theme === 'dark' ? 'border-gray-600 hover:bg-gray-700 text-white' : ''}>
-                    <FileText className={`h-4 w-4 ${theme === 'dark' ? 'text-white' : ''}`} />
-                  </Button>
-                  <Button variant="outline" onClick={() => {setStatusFilter('all'); setMonthFilter(''); setSearch('');}} className={theme === 'dark' ? 'border-gray-600 hover:bg-gray-700 text-white' : ''}>
-                    <Filter className={`h-4 w-4 mr-2 ${theme === 'dark' ? 'text-white' : ''}`} />
-                    Clear Filters
-                  </Button>
-                </div>
+            {/* Filters */}
+            <div className={`grid grid-cols-1 md:grid-cols-5 gap-4 mb-6 p-4 rounded-lg ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-50'}`}>
+              <div className="space-y-2">
+                <Label className={theme === 'dark' ? 'text-white' : ''}>Status Filter</Label>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className={theme === 'dark' ? 'bg-gray-700 border-gray-600 text-gray-100' : ''}>
+                    <SelectValue placeholder="All statuses" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Statuses</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="confirmed">Confirmed</SelectItem>
+                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
- 
-              <Card className={`shadow-lg transition-all duration-200 ${theme === 'dark' ? 'border-gray-700 bg-gray-800 shadow-gray-900/10 hover:shadow-gray-900/20' : 'shadow-blue-500/10 border-blue-200 bg-white hover:shadow-xl hover:shadow-blue-500/20 hover:border-blue-300'}`}>
+              <div className="space-y-2">
+                <Label className={theme === 'dark' ? 'text-white' : ''}>Sort by Month</Label>
+                <Input
+                  type="month"
+                  value={monthFilter}
+                  onChange={(e) => setMonthFilter(e.target.value)}
+                  className={theme === 'dark' ? 'bg-gray-700 border-gray-600 text-gray-100' : ''}
+                />
+              </div>
+              <div className="flex items-end gap-2">
+                <Button onClick={printReport} variant="outline" size="sm" title="Print" className={theme === 'dark' ? 'border-gray-600 hover:bg-gray-700 text-white' : ''}>
+                  <Printer className={`h-4 w-4 ${theme === 'dark' ? 'text-white' : ''}`} />
+                </Button>
+                <Button onClick={handleExportCSV} variant="outline" size="sm" title="Export CSV" className={theme === 'dark' ? 'border-gray-600 hover:bg-gray-700 text-white' : ''}>
+                  <FileText className={`h-4 w-4 ${theme === 'dark' ? 'text-white' : ''}`} />
+                </Button>
+                <Button variant="outline" onClick={() => {setStatusFilter('all'); setMonthFilter(''); setSearch('');}} className={theme === 'dark' ? 'border-gray-600 hover:bg-gray-700 text-white' : ''}>
+                  <Filter className={`h-4 w-4 mr-2 ${theme === 'dark' ? 'text-white' : ''}`} />
+                  Clear Filters
+                </Button>
+                {selectedBookings.length > 0 && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" size="sm" title="Delete Selected">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Selected Bookings</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete {selectedBookings.length} selected booking(s)? This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={async () => {
+                          try {
+                            for (const id of selectedBookings) {
+                              await api.deleteBooking(id);
+                            }
+                            toast({ title: "Success", description: "Selected bookings deleted successfully" });
+                            loadBookings();
+                            clearSelection();
+                          } catch (error) {
+                            toast({ variant: "destructive", title: "Error", description: "Failed to delete bookings" });
+                          }
+                        }}>Delete</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
+              </div>
+            </div>
+
+            <Card className={`shadow-lg transition-all duration-200 ${theme === 'dark' ? 'border-gray-700 bg-gray-800 shadow-gray-900/10 hover:shadow-gray-900/20' : 'shadow-blue-500/10 border-blue-200 bg-white hover:shadow-xl hover:shadow-blue-500/20 hover:border-blue-300'}`}>
                 <CardHeader className={`border-b ${theme === 'dark' ? 'border-gray-700' : 'border-blue-200'}`}>
                   <div className="flex items-center justify-between">
                     <div>
@@ -759,6 +831,12 @@ const Bookings = () => {
                 <table className="w-full table-fixed">
                   <thead className={`border-b-2 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'}`}>
                     <tr>
+                      <th className={`w-12 text-center py-4 px-6 font-bold sticky top-0 border-r ${theme === 'dark' ? 'text-gray-200 bg-gray-800 border-gray-700' : 'text-gray-800 bg-gray-50 border-gray-200'}`}>
+                        <Checkbox
+                          checked={selectedBookings.length === sortedBookings.length && sortedBookings.length > 0}
+                          onCheckedChange={(checked) => handleSelectAll(!!checked)}
+                        />
+                      </th>
                       <th className={`w-1/4 text-left py-4 px-6 font-bold sticky top-0 cursor-pointer hover:bg-gray-100 select-none border-r ${theme === 'dark' ? 'text-gray-200 bg-gray-800 hover:bg-gray-700 border-gray-700' : 'text-gray-800 bg-gray-50 hover:bg-gray-100 border-gray-200'}`} onClick={() => handleSort('client')}>
                         <div className="flex items-center justify-between">
                           <span>Client</span>
@@ -795,7 +873,7 @@ const Bookings = () => {
                   <tbody className={`divide-y ${theme === 'dark' ? 'divide-gray-700' : 'divide-gray-200'}`}>
                     {loading ? (
                       <tr>
-                        <td colSpan={6} className={`text-center py-8 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                        <td colSpan={7} className={`text-center py-8 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
                           <div className="flex justify-center items-center">
                             <Loader2 className="h-6 w-6 animate-spin text-primary" />
                             <span className="ml-2">Loading bookings...</span>
@@ -804,13 +882,19 @@ const Bookings = () => {
                       </tr>
                     ) : bookings.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className={`text-center py-8 ${theme === 'dark' ? 'text-gray-400' : 'text-muted-foreground'}`}>
+                        <td colSpan={7} className={`text-center py-8 ${theme === 'dark' ? 'text-gray-400' : 'text-muted-foreground'}`}>
                           No bookings found
                         </td>
                       </tr>
                     ) : (
                       sortedBookings.map((booking, index) => (
                         <tr key={booking.id} className={`transition-colors duration-150 ${theme === 'dark' ? `hover:bg-gray-700/50 ${index % 2 === 0 ? 'bg-gray-900' : 'bg-gray-800/30'}` : `hover:bg-blue-50/50 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}`}>
+                          <td className={`py-4 px-6 text-center border-r ${theme === 'dark' ? 'border-gray-700' : 'border-gray-100'}`}>
+                            <Checkbox
+                              checked={selectedBookings.includes(booking.id)}
+                              onCheckedChange={(checked) => handleSelectBooking(booking.id, !!checked)}
+                            />
+                          </td>
                           <td className={`py-4 px-6 font-semibold border-r ${theme === 'dark' ? 'text-gray-200 border-gray-700' : 'text-gray-900 border-gray-100'}`}>
                             <div className="flex items-center gap-2">
                               <Users className={`h-4 w-4 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`} />
@@ -880,6 +964,7 @@ const Bookings = () => {
 
         {/* Edit Dialog */}
         <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+          
           <DialogContent className={`sm:max-w-[600px] max-h-[90vh] overflow-y-auto ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : ''}`}>
             <DialogHeader>
               <DialogTitle className={theme === 'dark' ? 'text-gray-100' : ''}>Edit Booking</DialogTitle>
@@ -1064,7 +1149,10 @@ const Bookings = () => {
               <Button variant="outline" onClick={() => {setEditDialogOpen(false); resetForm();}}>
                 Cancel
               </Button>
-              <Button onClick={handleEdit}>Update Booking</Button>
+              <Button onClick={handleEdit} disabled={updatingBooking}>
+                {updatingBooking && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                Update Booking
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -1169,9 +1257,9 @@ const Bookings = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-          </main>
-        </div>
+      </main>
       </div>
+    </div>
     </ProtectedRoute>
   );
 };

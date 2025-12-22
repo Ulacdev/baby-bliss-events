@@ -53,13 +53,8 @@ const Auth = () => {
         description: "You've successfully logged in.",
       });
 
-      // Redirect based on user role
-      const userRole = response.user?.role || 'client';
-      if (userRole === 'admin') {
-        navigate("/admin");
-      } else {
-        navigate("/");
-      }
+      // Redirect to admin dashboard for all users
+      navigate("/admin");
     } catch (error) {
       toast({
         variant: "destructive",

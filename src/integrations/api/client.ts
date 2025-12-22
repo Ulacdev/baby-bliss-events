@@ -1,6 +1,9 @@
 
 // Custom API client to replace Supabase
-const API_BASE_URL = 'https://baby-bliss-backend.onrender.com';
+// For local PHP backend: '/api'
+// For local Node.js backend: 'http://localhost:3001'
+// For production: your deployed backend URL
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 interface AuthResponse {
   user: {
@@ -227,7 +230,9 @@ class ApiClient {
       monthly_bookings: number;
       upcoming_events: number;
       estimated_revenue: number;
-      recent_bookings: any[];
+      recent_activities: any[];
+      monthly_trends: any[];
+      status_distribution: any[];
     }
   }> {
     return this.request('/dashboard.php');
@@ -584,6 +589,52 @@ class ApiClient {
 
   async getRecentActivity(): Promise<{ activities: any[] }> {
     return this.request('/reports.php?action=recent-activity');
+  }
+
+  async importCSV(type: string, file: File): Promise<{ message: string; results: any }> {
+    const formData = new FormData();
+    formData.append('type', type);
+    formData.append('file', file);
+
+    const url = `${API_BASE_URL}/import.php`;
+    console.log('Import Request:', url);
+
+    const headers: HeadersInit = {};
+    if (this.token) {
+      headers['Authorization'] = `Bearer ${this.token}`;
+    }
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: formData,
+      });
+
+      console.log('Import Response status:', response.status);
+
+      const contentType = response.headers.get('content-type');
+      const contentLength = response.headers.get('content-length');
+
+      if (contentLength === '0' || !contentType?.includes('application/json')) {
+        if (!response.ok) {
+          throw new Error(`Import failed with status ${response.status}`);
+        }
+        return { message: 'Import completed', results: { success: 0, errors: [], total: 0 } };
+      }
+
+      const data = await response.json();
+      console.log('Import Response data:', data);
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Import failed');
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Import failed:', error);
+      throw error;
+    }
   }
 
   async generateReportData(report_type: string, report_period: string): Promise<{ message: string; report: any }> {

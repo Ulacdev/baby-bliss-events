@@ -11,6 +11,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ActionMenu } from "@/components/ui/ActionMenu";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Search, Plus, Loader2, Edit, Trash2, Eye, Mail, Phone, Calendar, DollarSign, Users, Filter, Printer, Download, User } from "lucide-react";
 import { api } from "@/integrations/api/client";
 import { useToast } from "@/hooks/use-toast";
@@ -31,6 +32,7 @@ const Clients = () => {
   const [monthFilter, setMonthFilter] = useState<string>('');
   const [userRole, setUserRole] = useState<string>('admin');
   const [userId, setUserId] = useState<number | null>(null);
+  const [selectedClients, setSelectedClients] = useState<string[]>([]);
 
   // Dialog states
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
@@ -210,6 +212,31 @@ const Clients = () => {
   const openViewDialog = (client: any) => {
     setSelectedClient(client);
     setViewDialogOpen(true);
+  };
+
+  const handleSelectClient = (clientEmail: string, checked: boolean | string) => {
+    setSelectedClients(prev => {
+      const isCurrentlySelected = prev.includes(clientEmail);
+      if (checked === true && !isCurrentlySelected) {
+        return [...prev, clientEmail];
+      } else if (checked === false && isCurrentlySelected) {
+        return prev.filter(email => email !== clientEmail);
+      }
+      return prev;
+    });
+  };
+
+  const handleSelectAllClients = (checked: boolean | string) => {
+    if (checked === true) {
+      setSelectedClients(sortedClients.map(client => client.email));
+    } else {
+      setSelectedClients([]);
+    }
+  };
+
+  const handleBulkDeleteSuccess = () => {
+    setSelectedClients([]);
+    loadClients();
   };
 
   const filteredClients = clients.filter(client => {
@@ -538,6 +565,40 @@ const Clients = () => {
                   <Filter className={`h-4 w-4 mr-2 ${theme === 'dark' ? 'text-white' : ''}`} />
                   Clear Filters
                 </Button>
+                {selectedClients.length > 0 && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" size="sm" title="Delete Selected">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Selected Clients</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete {selectedClients.length} selected client(s)? This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={async () => {
+                          try {
+                            for (const id of selectedClients) {
+                              const client = clients.find(c => (c.id?.toString() || c.email) === id);
+                              if (client) {
+                                await api.deleteClient(client.email);
+                              }
+                            }
+                            toast({ title: "Success", description: "Selected clients deleted successfully" });
+                            handleBulkDeleteSuccess();
+                          } catch (error) {
+                            toast({ variant: "destructive", title: "Error", description: "Failed to delete clients" });
+                          }
+                        }}>Delete</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
               </div>
             </div>
 
@@ -571,6 +632,12 @@ const Clients = () => {
                       <table className="w-full table-fixed">
                         <thead className={`border-b-2 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'}`}>
                           <tr>
+                            <th className={`w-12 text-center py-4 px-6 font-bold sticky top-0 border-r ${theme === 'dark' ? 'text-gray-200 bg-gray-800 border-gray-700' : 'text-gray-800 bg-gray-50 border-gray-200'}`}>
+                              <Checkbox
+                                checked={selectedClients.length === sortedClients.length && sortedClients.length > 0}
+                                onCheckedChange={(checked) => handleSelectAllClients(checked)}
+                              />
+                            </th>
                             <th className={`w-1/4 text-left py-4 px-6 font-bold sticky top-0 cursor-pointer hover:bg-gray-100 select-none border-r ${theme === 'dark' ? 'text-gray-200 bg-gray-800 hover:bg-gray-700 border-gray-700' : 'text-gray-800 bg-gray-50 hover:bg-gray-100 border-gray-200'}`} onClick={() => handleSort('full_name')}>
                               <div className="flex items-center justify-between">
                                 <span>Client Name</span>
@@ -613,6 +680,12 @@ const Clients = () => {
                         <tbody className={`divide-y ${theme === 'dark' ? 'divide-gray-700' : 'divide-gray-200'}`}>
                           {sortedClients.map((client, index) => (
                             <tr key={client.email} className={`transition-colors duration-150 ${theme === 'dark' ? 'hover:bg-gray-700/50 bg-gray-800' : 'hover:bg-blue-50/50 bg-white'}`}>
+                              <td className={`py-4 px-6 text-center border-r ${theme === 'dark' ? 'border-gray-700' : 'border-gray-100'}`}>
+                                <Checkbox
+                                  checked={selectedClients.includes(client.email)}
+                                  onCheckedChange={(checked) => handleSelectClient(client.email, checked)}
+                                />
+                              </td>
                               <td className={`py-4 px-6 font-semibold border-r ${theme === 'dark' ? 'text-gray-200 border-gray-700' : 'text-gray-900 border-gray-100'}`}>
                                 <div className="flex items-center gap-2">
                                   <User className={`h-4 w-4 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`} />

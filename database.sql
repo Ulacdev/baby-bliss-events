@@ -1,477 +1,316 @@
--- --------------------------------------------------------
--- Host:                         127.0.0.1
--- Server version:               10.4.32-MariaDB - mariadb.org binary distribution
--- Server OS:                    Win64
--- HeidiSQL Version:             12.6.0.6765
--- --------------------------------------------------------
+-- Baby Bliss Events Management Database Schema
+-- Run this script to set up the database for both PHP and Node.js backends
 
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */
-;
-/*!40101 SET NAMES utf8 */
-;
-/*!50503 SET NAMES utf8mb4 */
-;
-/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */
-;
-/*!40103 SET TIME_ZONE='+00:00' */
-;
-/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */
-;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */
-;
-/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */
-;
-
-
--- Dumping database structure for baby_bliss
 CREATE DATABASE
 IF
-  NOT EXISTS `baby_bliss` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci */
-;
-  USE `baby_bliss`;
+  NOT EXISTS baby_bliss;
+  USE baby_bliss;
 
-  -- Dumping structure for table baby_bliss.archived_bookings
+  -- Users table (staff/admin users)
   CREATE TABLE
   IF
-    NOT EXISTS `archived_bookings` (
-      `id` int(11) NOT NULL AUTO_INCREMENT
-      , `original_id` int(11) NOT NULL
-      , `first_name` varchar(100) NOT NULL
-      , `last_name` varchar(100) NOT NULL
-      , `email` varchar(255) NOT NULL
-      , `phone` varchar(20) DEFAULT NULL
-      , `event_date` date NOT NULL
-      , `event_title` varchar(255) DEFAULT NULL
-      , `guests` int(11) DEFAULT NULL
-      , `venue` varchar(255) DEFAULT NULL
-      , `package` varchar(50) DEFAULT NULL
-      , `package_price` decimal(10, 2) DEFAULT NULL
-      , `special_requests` text DEFAULT NULL
-      , `images` text DEFAULT NULL
-      , `status` varchar(50) DEFAULT NULL
-      , `deleted_reason` varchar(255) DEFAULT NULL
-      , `deleted_by` int(11) DEFAULT NULL
-      , `original_created_at` timestamp NULL DEFAULT NULL
-      , `original_updated_at` timestamp NULL DEFAULT NULL
-      , `deleted_at` timestamp NOT NULL DEFAULT current_timestamp()
-      , PRIMARY KEY (`id`)
-    ) ENGINE = InnoDB AUTO_INCREMENT = 6 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
+    NOT EXISTS users (
+      id INT PRIMARY KEY AUTO_INCREMENT
+      , username VARCHAR(50) UNIQUE NOT NULL
+      , email VARCHAR(100) UNIQUE NOT NULL
+      , password VARCHAR(255) NOT NULL
+      , first_name VARCHAR(50)
+      , last_name VARCHAR(50)
+      , phone VARCHAR(20)
+      , role ENUM('admin', 'staff') DEFAULT 'staff'
+      , profile_image VARCHAR(255)
+      , status ENUM('active', 'inactive') DEFAULT 'active'
+      , created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      , updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      ON
+      UPDATE
+        CURRENT_TIMESTAMP
+    );
 
-    -- Data exporting was unselected.
-
-    -- Dumping structure for table baby_bliss.archived_clients
+    -- Clients table
     CREATE TABLE
     IF
-      NOT EXISTS `archived_clients` (
-        `id` int(11) NOT NULL AUTO_INCREMENT
-        , `original_id` int(11) NOT NULL
-        , `first_name` varchar(100) NOT NULL
-        , `last_name` varchar(100) NOT NULL
-        , `email` varchar(255) NOT NULL
-        , `phone` varchar(20) DEFAULT NULL
-        , `address` text DEFAULT NULL
-        , `notes` text DEFAULT NULL
-        , `total_bookings` int(11) DEFAULT NULL
-        , `total_spent` decimal(10, 2) DEFAULT NULL
-        , `deleted_reason` varchar(255) DEFAULT NULL
-        , `deleted_by` int(11) DEFAULT NULL
-        , `original_created_at` timestamp NULL DEFAULT NULL
-        , `original_updated_at` timestamp NULL DEFAULT NULL
-        , `deleted_at` timestamp NOT NULL DEFAULT current_timestamp()
-        , PRIMARY KEY (`id`)
-      ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
+      NOT EXISTS clients (
+        id INT PRIMARY KEY AUTO_INCREMENT
+        , email VARCHAR(100) UNIQUE NOT NULL
+        , first_name VARCHAR(50)
+        , last_name VARCHAR(50)
+        , phone VARCHAR(20)
+        , created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        , updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ON
+        UPDATE
+          CURRENT_TIMESTAMP
+      );
 
-      -- Data exporting was unselected.
-
-      -- Dumping structure for table baby_bliss.archived_expenses
+      -- Bookings table
       CREATE TABLE
       IF
-        NOT EXISTS `archived_expenses` (
-          `id` int(11) NOT NULL AUTO_INCREMENT
-          , `original_id` int(11) NOT NULL
-          , `category` varchar(100) DEFAULT NULL
-          , `description` text DEFAULT NULL
-          , `amount` decimal(10, 2) DEFAULT NULL
-          , `expense_date` date DEFAULT NULL
-          , `payment_method` varchar(50) DEFAULT NULL
-          , `receipt_image` varchar(255) DEFAULT NULL
-          , `notes` text DEFAULT NULL
-          , `created_by` int(11) DEFAULT NULL
-          , `deleted_reason` varchar(255) DEFAULT NULL
-          , `deleted_by` int(11) DEFAULT NULL
-          , `original_created_at` timestamp NULL DEFAULT NULL
-          , `original_updated_at` timestamp NULL DEFAULT NULL
-          , `deleted_at` timestamp NOT NULL DEFAULT current_timestamp()
-          , PRIMARY KEY (`id`)
-        ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
+        NOT EXISTS bookings (
+          id INT PRIMARY KEY AUTO_INCREMENT
+          , client_id INT
+          , first_name VARCHAR(50) NOT NULL
+          , last_name VARCHAR(50) NOT NULL
+          , email VARCHAR(100) NOT NULL
+          , phone VARCHAR(20)
+          , event_date DATE NOT NULL
+          , guests INT
+          , venue VARCHAR(255)
+          , package VARCHAR(100)
+          , special_requests TEXT
+          , images TEXT
+          , status ENUM('pending', 'confirmed', 'cancelled') DEFAULT 'pending'
+          , created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          , updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          ON
+          UPDATE
+            CURRENT_TIMESTAMP
+            , FOREIGN KEY (client_id) REFERENCES clients(id)
+          ON DELETE SET NULL
+        );
 
-        -- Data exporting was unselected.
-
-        -- Dumping structure for table baby_bliss.archived_messages
+        -- Messages/Contact forms table
         CREATE TABLE
         IF
-          NOT EXISTS `archived_messages` (
-            `id` int(11) NOT NULL AUTO_INCREMENT
-            , `original_id` int(11) NOT NULL
-            , `name` varchar(255) DEFAULT NULL
-            , `email` varchar(255) DEFAULT NULL
-            , `phone` varchar(20) DEFAULT NULL
-            , `subject` varchar(255) DEFAULT NULL
-            , `message` text DEFAULT NULL
-            , `rating` int(11) DEFAULT NULL
-            , `status` varchar(50) DEFAULT NULL
-            , `replied_at` timestamp NULL DEFAULT NULL
-            , `replied_by` int(11) DEFAULT NULL
-            , `deleted_reason` varchar(255) DEFAULT NULL
-            , `deleted_by` int(11) DEFAULT NULL
-            , `original_created_at` timestamp NULL DEFAULT NULL
-            , `original_updated_at` timestamp NULL DEFAULT NULL
-            , `deleted_at` timestamp NOT NULL DEFAULT current_timestamp()
-            , PRIMARY KEY (`id`)
-          ) ENGINE = InnoDB AUTO_INCREMENT = 4 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
+          NOT EXISTS messages (
+            id INT PRIMARY KEY AUTO_INCREMENT
+            , name VARCHAR(100) NOT NULL
+            , email VARCHAR(100) NOT NULL
+            , phone VARCHAR(20)
+            , subject VARCHAR(255)
+            , message TEXT NOT NULL
+            , rating INT CHECK (
+              rating >= 1
+              AND rating <= 5
+            )
+            , status ENUM('unread', 'read', 'replied') DEFAULT 'unread'
+            , created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            , updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            ON
+            UPDATE
+              CURRENT_TIMESTAMP
+          );
 
-          -- Data exporting was unselected.
-
-          -- Dumping structure for table baby_bliss.archived_payments
+          -- Payments table
           CREATE TABLE
           IF
-            NOT EXISTS `archived_payments` (
-              `id` int(11) NOT NULL AUTO_INCREMENT
-              , `original_id` int(11) NOT NULL
-              , `booking_id` int(11) DEFAULT NULL
-              , `amount` decimal(10, 2) DEFAULT NULL
-              , `payment_status` varchar(50) DEFAULT NULL
-              , `payment_method` varchar(50) DEFAULT NULL
-              , `payment_date` date DEFAULT NULL
-              , `transaction_reference` varchar(100) DEFAULT NULL
-              , `notes` text DEFAULT NULL
-              , `deleted_reason` varchar(255) DEFAULT NULL
-              , `deleted_by` int(11) DEFAULT NULL
-              , `original_created_at` timestamp NULL DEFAULT NULL
-              , `original_updated_at` timestamp NULL DEFAULT NULL
-              , `deleted_at` timestamp NOT NULL DEFAULT current_timestamp()
-              , PRIMARY KEY (`id`)
-            ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
+            NOT EXISTS payments (
+              id INT PRIMARY KEY AUTO_INCREMENT
+              , booking_id INT
+              , amount DECIMAL(10, 2) NOT NULL
+              , payment_status ENUM('pending', 'paid', 'refunded') DEFAULT 'pending'
+              , payment_method VARCHAR(50)
+              , payment_date DATE
+              , notes TEXT
+              , deleted_reason TEXT
+              , created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+              , updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+              ON
+              UPDATE
+                CURRENT_TIMESTAMP
+                , FOREIGN KEY (booking_id) REFERENCES bookings(id)
+              ON DELETE SET NULL
+            );
 
-            -- Data exporting was unselected.
-
-            -- Dumping structure for table baby_bliss.archived_users
+            -- Expenses table
             CREATE TABLE
             IF
-              NOT EXISTS `archived_users` (
-                `id` int(11) NOT NULL AUTO_INCREMENT
-                , `original_id` int(11) NOT NULL
-                , `email` varchar(255) NOT NULL
-                , `full_name` varchar(255) DEFAULT NULL
-                , `phone` varchar(20) DEFAULT NULL
-                , `role` varchar(50) DEFAULT NULL
-                , `profile_image` varchar(255) DEFAULT NULL
-                , `business_name` varchar(255) DEFAULT NULL
-                , `business_address` text DEFAULT NULL
-                , `business_phone` varchar(20) DEFAULT NULL
-                , `business_email` varchar(255) DEFAULT NULL
-                , `deleted_reason` varchar(255) DEFAULT NULL
-                , `deleted_by` int(11) DEFAULT NULL
-                , `original_created_at` timestamp NULL DEFAULT NULL
-                , `original_updated_at` timestamp NULL DEFAULT NULL
-                , `deleted_at` timestamp NOT NULL DEFAULT current_timestamp()
-                , PRIMARY KEY (`id`)
-              ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
+              NOT EXISTS expenses (
+                id INT PRIMARY KEY AUTO_INCREMENT
+                , category VARCHAR(100) NOT NULL
+                , description TEXT
+                , amount DECIMAL(10, 2) NOT NULL
+                , expense_date DATE NOT NULL
+                , payment_method VARCHAR(50)
+                , notes TEXT
+                , created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+              );
 
-              -- Data exporting was unselected.
-
-              -- Dumping structure for table baby_bliss.audit_logs
+              -- Audit log table
               CREATE TABLE
               IF
-                NOT EXISTS `audit_logs` (
-                  `id` int(11) NOT NULL AUTO_INCREMENT
-                  , `user_id` int(11) DEFAULT NULL
-                  , `user_name` varchar(100) DEFAULT NULL
-                  , `activity` varchar(100) NOT NULL
-                  , `details` text DEFAULT NULL
-                  , `ip_address` varchar(45) DEFAULT NULL
-                  , `created_at` timestamp NOT NULL DEFAULT current_timestamp()
-                  , PRIMARY KEY (`id`)
-                ) ENGINE = InnoDB AUTO_INCREMENT = 301 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
+                NOT EXISTS audit_logs (
+                  id INT PRIMARY KEY AUTO_INCREMENT
+                  , user_id INT
+                  , activity VARCHAR(255) NOT NULL
+                  , details TEXT
+                  , ip_address VARCHAR(45)
+                  , user_agent TEXT
+                  , created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                  , FOREIGN KEY (user_id) REFERENCES users(id)
+                  ON DELETE SET NULL
+                );
 
-                -- Data exporting was unselected.
-
-                -- Dumping structure for table baby_bliss.bookings
+                -- Settings table
                 CREATE TABLE
                 IF
-                  NOT EXISTS `bookings` (
-                    `id` int(11) NOT NULL AUTO_INCREMENT
-                    , `client_id` int(11) DEFAULT NULL
-                    , `first_name` varchar(100) NOT NULL
-                    , `last_name` varchar(100) NOT NULL
-                    , `email` varchar(255) NOT NULL
-                    , `phone` varchar(20) DEFAULT NULL
-                    , `event_date` date NOT NULL
-                    , `event_title` varchar(255) DEFAULT NULL
-                    , `guests` int(11) DEFAULT NULL
-                    , `venue` varchar(255) DEFAULT NULL
-                    , `package` varchar(50) DEFAULT NULL
-                    , `package_price` decimal(10, 2) DEFAULT NULL
-                    , `special_requests` text DEFAULT NULL
-                    , `images` text DEFAULT NULL
-                    , `status` enum('pending', 'confirmed', 'cancelled') DEFAULT 'pending'
-                    , `deleted_at` timestamp NULL DEFAULT NULL
-                    , `created_at` timestamp NOT NULL DEFAULT current_timestamp()
-                    , `updated_at` timestamp NOT NULL DEFAULT current_timestamp()
+                  NOT EXISTS settings (
+                    id INT PRIMARY KEY AUTO_INCREMENT
+                    , setting_key VARCHAR(100) UNIQUE NOT NULL
+                    , setting_value TEXT
+                    , created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    , updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                     ON
                     UPDATE
-                      current_timestamp()
-                      , PRIMARY KEY (`id`)
-                      , KEY `client_id` (`client_id`)
-                      , CONSTRAINT `bookings_ibfk_1` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`)
-                    ON DELETE SET NULL
-                  ) ENGINE = InnoDB AUTO_INCREMENT = 22 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
+                      CURRENT_TIMESTAMP
+                  );
 
-                  -- Data exporting was unselected.
-
-                  -- Dumping structure for table baby_bliss.clients
+                  -- Archive tables for soft deletes
                   CREATE TABLE
                   IF
-                    NOT EXISTS `clients` (
-                      `id` int(11) NOT NULL AUTO_INCREMENT
-                      , `first_name` varchar(100) NOT NULL
-                      , `last_name` varchar(100) NOT NULL
-                      , `email` varchar(255) NOT NULL
-                      , `phone` varchar(20) DEFAULT NULL
-                      , `address` text DEFAULT NULL
-                      , `notes` text DEFAULT NULL
-                      , `total_bookings` int(11) DEFAULT 0
-                      , `total_spent` decimal(10, 2) DEFAULT 0.00
-                      , `created_at` timestamp NOT NULL DEFAULT current_timestamp()
-                      , `updated_at` timestamp NOT NULL DEFAULT current_timestamp()
-                      ON
-                      UPDATE
-                        current_timestamp()
-                        , PRIMARY KEY (`id`)
-                        , UNIQUE KEY `email` (`email`)
-                    ) ENGINE = InnoDB AUTO_INCREMENT = 6 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
+                    NOT EXISTS archived_bookings (
+                      id INT PRIMARY KEY AUTO_INCREMENT
+                      , original_id INT NOT NULL
+                      , data JSON NOT NULL
+                      , archived_by INT
+                      , archived_reason TEXT
+                      , archived_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                      , FOREIGN KEY (archived_by) REFERENCES users(id)
+                      ON DELETE SET NULL
+                    );
 
-                    -- Data exporting was unselected.
+                    -- Insert default admin user (password: admin123)
+                    INSERT IGNORE
+                    INTO
+                      users (
+                        username
+                        , email
+                        , password
+                        , first_name
+                        , last_name
+                        , role
+                      )
+                    VALUES
+                      (
+                        'admin'
+                        , 'admin@babybliss.com'
+                        , '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'
+                        , 'Admin'
+                        , 'User'
+                        , 'admin'
+                      );
 
-                    -- Dumping structure for table baby_bliss.expenses
-                    CREATE TABLE
-                    IF
-                      NOT EXISTS `expenses` (
-                        `id` int(11) NOT NULL AUTO_INCREMENT
-                        , `category` varchar(100) NOT NULL
-                        , `description` text NOT NULL
-                        , `amount` decimal(10, 2) NOT NULL
-                        , `expense_date` date NOT NULL
-                        , `payment_method` varchar(50) DEFAULT NULL
-                        , `receipt_image` varchar(255) DEFAULT NULL
-                        , `notes` text DEFAULT NULL
-                        , `created_by` int(11) DEFAULT NULL
-                        , `created_at` timestamp NOT NULL DEFAULT current_timestamp()
-                        , `updated_at` timestamp NOT NULL DEFAULT current_timestamp()
-                        ON
-                        UPDATE
-                          current_timestamp()
-                          , PRIMARY KEY (`id`)
-                          , KEY `created_by` (`created_by`)
-                          , CONSTRAINT `expenses_ibfk_1` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`)
-                        ON DELETE SET NULL
-                      ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
+                    -- Insert default settings
+                    INSERT IGNORE
+                    INTO
+                      settings (setting_key, setting_value)
+                    VALUES
+                      ('general_site_title', 'Baby Bliss')
+                      , (
+                        'general_logo_url'
+                        , '/Baby_Cloud_To_Bliss_Text_Change.png'
+                      )
+                      , ('general_favicon_url', '')
+                      , ('general_logo_size', '32')
+                      , ('general_company_name', 'Baby Bliss Events')
+                      , ('general_company_email', 'info@babybliss.com')
+                      , ('general_company_phone', '(555) 123-4567')
+                      , ('navbar_nav_home_text', 'Home')
+                      , ('navbar_nav_about_text', 'About')
+                      , ('navbar_nav_gallery_text', 'Events')
+                      , ('navbar_nav_book_text', 'Book Now')
+                      , ('navbar_nav_contact_text', 'Contact')
+                      , ('navbar_nav_login_text', 'Login')
+                      , (
+                        'footer_footer_text'
+                        , '© 2024 Baby Bliss Events. All rights reserved.'
+                      )
+                      , (
+                        'footer_footer_address'
+                        , '123 Main Street, City, State 12345'
+                      );
 
-                      -- Data exporting was unselected.
+                    -- Create indexes for better performance
+                    CREATE INDEX idx_bookings_status
+                    ON bookings(status);
+                    CREATE INDEX idx_bookings_event_date
+                    ON bookings(event_date);
+                    CREATE INDEX idx_bookings_email
+                    ON bookings(email);
+                    CREATE INDEX idx_payments_booking_id
+                    ON payments(booking_id);
+                    CREATE INDEX idx_messages_status
+                    ON messages(status);
+                    CREATE INDEX idx_audit_logs_activity
+                    ON audit_logs(activity);
+                    CREATE INDEX idx_audit_logs_created_at
+                    ON audit_logs(created_at);
 
-                      -- Dumping structure for table baby_bliss.messages
-                      CREATE TABLE
-                      IF
-                        NOT EXISTS `messages` (
-                          `id` int(11) NOT NULL AUTO_INCREMENT
-                          , `name` varchar(255) NOT NULL
-                          , `email` varchar(255) NOT NULL
-                          , `phone` varchar(20) DEFAULT NULL
-                          , `subject` varchar(255) DEFAULT NULL
-                          , `message` text NOT NULL
-                          , `rating` int(11) DEFAULT NULL
-                          , `status` enum('unread', 'read', 'replied', 'archived') DEFAULT 'unread'
-                          , `replied_at` timestamp NULL DEFAULT NULL
-                          , `replied_by` int(11) DEFAULT NULL
-                          , `created_at` timestamp NOT NULL DEFAULT current_timestamp()
-                          , `updated_at` timestamp NOT NULL DEFAULT current_timestamp()
-                          ON
-                          UPDATE
-                            current_timestamp()
-                            , PRIMARY KEY (`id`)
-                            , KEY `replied_by` (`replied_by`)
-                            , CONSTRAINT `messages_ibfk_1` FOREIGN KEY (`replied_by`) REFERENCES `users` (`id`)
-                          ON DELETE SET NULL
-                        ) ENGINE = InnoDB AUTO_INCREMENT = 6 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
+                    -- Insert sample data for testing
+                    INSERT IGNORE
+                    INTO
+                      clients (email, first_name, last_name, phone)
+                    VALUES
+                      (
+                        'john.doe@example.com'
+                        , 'John'
+                        , 'Doe'
+                        , '(555) 123-4567'
+                      )
+                      , (
+                        'jane.smith@example.com'
+                        , 'Jane'
+                        , 'Smith'
+                        , '(555) 987-6543'
+                      );
 
-                        -- Data exporting was unselected.
+                    INSERT IGNORE
+                    INTO
+                      bookings (
+                        client_id
+                        , first_name
+                        , last_name
+                        , email
+                        , phone
+                        , event_date
+                        , guests
+                        , venue
+                        , package
+                        , status
+                      )
+                    VALUES
+                      (
+                        1
+                        , 'John'
+                        , 'Doe'
+                        , 'john.doe@example.com'
+                        , '(555) 123-4567'
+                        , '2024-12-25'
+                        , 50
+                        , 'Grand Ballroom'
+                        , 'Premium Package'
+                        , 'confirmed'
+                      )
+                      , (
+                        2
+                        , 'Jane'
+                        , 'Smith'
+                        , 'jane.smith@example.com'
+                        , '(555) 987-6543'
+                        , '2024-12-31'
+                        , 30
+                        , 'Garden Terrace'
+                        , 'Standard Package'
+                        , 'pending'
+                      );
 
-                        -- Dumping structure for table baby_bliss.payments
-                        CREATE TABLE
-                        IF
-                          NOT EXISTS `payments` (
-                            `id` int(11) NOT NULL AUTO_INCREMENT
-                            , `booking_id` int(11) NOT NULL
-                            , `amount` decimal(10, 2) NOT NULL
-                            , `payment_status` enum('pending', 'paid', 'refunded') DEFAULT 'pending'
-                            , `payment_method` varchar(50) DEFAULT NULL
-                            , `payment_date` date DEFAULT NULL
-                            , `transaction_reference` varchar(100) DEFAULT NULL
-                            , `notes` text DEFAULT NULL
-                            , `created_at` timestamp NOT NULL DEFAULT current_timestamp()
-                            , `updated_at` timestamp NOT NULL DEFAULT current_timestamp()
-                            ON
-                            UPDATE
-                              current_timestamp()
-                              , PRIMARY KEY (`id`)
-                              , KEY `booking_id` (`booking_id`)
-                              , CONSTRAINT `payments_ibfk_1` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`)
-                            ON DELETE CASCADE
-                          ) ENGINE = InnoDB AUTO_INCREMENT = 17 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
-
-                          -- Data exporting was unselected.
-
-                          -- Dumping structure for table baby_bliss.profiles
-                          CREATE TABLE
-                          IF
-                            NOT EXISTS `profiles` (
-                              `id` int(11) NOT NULL AUTO_INCREMENT
-                              , `user_id` int(11) NOT NULL
-                              , `first_name` varchar(100) DEFAULT NULL
-                              , `last_name` varchar(100) DEFAULT NULL
-                              , `full_name` varchar(255) DEFAULT NULL
-                              , `phone` varchar(20) DEFAULT NULL
-                              , `bio` text DEFAULT NULL
-                              , `profile_image` varchar(255) DEFAULT NULL
-                              , `business_name` varchar(255) DEFAULT NULL
-                              , `business_address` text DEFAULT NULL
-                              , `business_phone` varchar(20) DEFAULT NULL
-                              , `business_email` varchar(255) DEFAULT NULL
-                              , `created_at` timestamp NOT NULL DEFAULT current_timestamp()
-                              , `updated_at` timestamp NOT NULL DEFAULT current_timestamp()
-                              ON
-                              UPDATE
-                                current_timestamp()
-                                , PRIMARY KEY (`id`)
-                                , KEY `user_id` (`user_id`)
-                                , CONSTRAINT `profiles_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-                              ON DELETE CASCADE
-                            ) ENGINE = InnoDB AUTO_INCREMENT = 4 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
-
-                            -- Data exporting was unselected.
-
-                            -- Dumping structure for table baby_bliss.reports
-                            CREATE TABLE
-                            IF
-                              NOT EXISTS `reports` (
-                                `id` int(11) NOT NULL AUTO_INCREMENT
-                                , `report_type` varchar(50) NOT NULL
-                                , `report_period` varchar(50) DEFAULT NULL
-                                , `total_bookings` int(11) DEFAULT 0
-                                , `confirmed_bookings` int(11) DEFAULT 0
-                                , `cancelled_bookings` int(11) DEFAULT 0
-                                , `pending_bookings` int(11) DEFAULT 0
-                                , `total_revenue` decimal(10, 2) DEFAULT 0.00
-                                , `average_guests` decimal(5, 2) DEFAULT 0.00
-                                , `popular_package` varchar(50) DEFAULT NULL
-                                , `popular_venue` varchar(255) DEFAULT NULL
-                                , `report_data` longtext CHARACTER
-                                SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`report_data`))
-                                , `generated_by` int(11) DEFAULT NULL
-                                , `created_at` timestamp NOT NULL DEFAULT current_timestamp()
-                                , PRIMARY KEY (`id`)
-                                , KEY `generated_by` (`generated_by`)
-                                , CONSTRAINT `reports_ibfk_1` FOREIGN KEY (`generated_by`) REFERENCES `users` (`id`)
-                              ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
-
-                              -- Data exporting was unselected.
-
-                              -- Dumping structure for table baby_bliss.settings
-                              CREATE TABLE
-                              IF
-                                NOT EXISTS `settings` (
-                                  `id` int(11) NOT NULL AUTO_INCREMENT
-                                  , `setting_key` varchar(100) NOT NULL
-                                  , `setting_value` text DEFAULT NULL
-                                  , `updated_at` timestamp NOT NULL DEFAULT current_timestamp()
-                                  ON
-                                  UPDATE
-                                    current_timestamp()
-                                    , PRIMARY KEY (`id`)
-                                    , UNIQUE KEY `setting_key` (`setting_key`)
-                                ) ENGINE = InnoDB AUTO_INCREMENT = 2204 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
-
-                                -- Data exporting was unselected.
-
-                                -- Dumping structure for table baby_bliss.users
-                                CREATE TABLE
-                                IF
-                                  NOT EXISTS `users` (
-                                    `id` int(11) NOT NULL AUTO_INCREMENT
-                                    , `email` varchar(255) NOT NULL
-                                    , `password_hash` varchar(255) NOT NULL
-                                    , `role` enum('admin', 'staff') DEFAULT 'admin'
-                                    , `session_token` varchar(255) DEFAULT NULL
-                                    , `session_expires` datetime DEFAULT NULL
-                                    , `created_at` timestamp NOT NULL DEFAULT current_timestamp()
-                                    , `updated_at` timestamp NOT NULL DEFAULT current_timestamp()
-                                    ON
-                                    UPDATE
-                                      current_timestamp()
-                                      , PRIMARY KEY (`id`)
-                                      , UNIQUE KEY `email` (`email`)
-                                  ) ENGINE = InnoDB AUTO_INCREMENT = 4 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
-
-                                  -- Data exporting was unselected.
-
-                                  -- Dumping structure for table baby_bliss.password_reset_tokens
-                                  CREATE TABLE
-                                  IF
-                                    NOT EXISTS `password_reset_tokens` (
-                                      `id` int(11) NOT NULL AUTO_INCREMENT
-                                      , `user_id` int(11) NOT NULL
-                                      , `email` varchar(255) NOT NULL
-                                      , `token` varchar(255) NOT NULL
-                                      , `expires_at` timestamp NOT NULL
-                                      , `used` tinyint(1) DEFAULT 0
-                                      , `created_at` timestamp NOT NULL DEFAULT current_timestamp()
-                                      , PRIMARY KEY (`id`)
-                                      , UNIQUE KEY `token` (`token`)
-                                      , KEY `user_id` (`user_id`)
-                                      , KEY `email` (`email`)
-                                      , CONSTRAINT `password_reset_tokens_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-                                      ON DELETE CASCADE
-                                    ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
-
-                                    -- Dumping structure for table baby_bliss.user_sessions
-                                    CREATE TABLE
-                                    IF
-                                      NOT EXISTS `user_sessions` (
-                                        `id` int(11) NOT NULL AUTO_INCREMENT
-                                        , `user_id` int(11) NOT NULL
-                                        , `email` varchar(255) NOT NULL
-                                        , `token` varchar(255) NOT NULL
-                                        , `expires_at` timestamp NOT NULL DEFAULT current_timestamp()
-                                        ON
-                                        UPDATE
-                                          current_timestamp()
-                                          , `created_at` timestamp NOT NULL DEFAULT current_timestamp()
-                                          , PRIMARY KEY (`id`)
-                                          , UNIQUE KEY `token` (`token`)
-                                          , KEY `user_id` (`user_id`)
-                                          , CONSTRAINT `user_sessions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-                                        ON DELETE CASCADE
-                                      ) ENGINE = InnoDB AUTO_INCREMENT = 14 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
-
-                                      -- Data exporting was unselected.
-
-                                      /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */
-;
-                                      /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */
-;
-                                      /*!40014 SET FOREIGN_KEY_CHECKS=IFNULL(@OLD_FOREIGN_KEY_CHECKS, 1) */
-;
-                                      /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */
-;
-                                      /*!40111 SET SQL_NOTES=IFNULL(@OLD_SQL_NOTES, 1) */
-;
+                    INSERT IGNORE
+                    INTO
+                      messages (name, email, phone, subject, message, rating)
+                    VALUES
+                      (
+                        'Alice Johnson'
+                        , 'alice@example.com'
+                        , '(555) 111-2222'
+                        , 'Wedding Inquiry'
+                        , 'I would like to inquire about your wedding packages.'
+                        , 5
+                      )
+                      , (
+                        'Bob Wilson'
+                        , 'bob@example.com'
+                        , '(555) 333-4444'
+                        , 'Birthday Party'
+                        , 'Planning a birthday party for my daughter.'
+                        , 4
+                      );

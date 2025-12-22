@@ -48,7 +48,7 @@ const Dashboard = () => {
         upcoming_events: 0,
         estimated_revenue: 0,
         total_paid_clients: 0,
-        recent_bookings: [],
+        recent_activities: [],
         monthly_trends: [],
         status_distribution: []
       });
@@ -219,41 +219,50 @@ const Dashboard = () => {
               <Card className={`border hover:shadow-xl transition-all duration-200 ${theme === 'dark' ? 'border-gray-700 bg-gray-800 hover:border-gray-600 shadow-gray-900/20' : 'border-blue-200 bg-white hover:border-blue-300'}`}>
                 <CardHeader className={`border-b ${theme === 'dark' ? 'border-gray-700' : 'border-blue-200'}`}>
                   <CardTitle className={`text-lg font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Recent Activity</CardTitle>
+                  <CardDescription className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>
+                    Latest booking activities and status changes
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="p-0">
                   {loading ? (
                     <div className="p-5 text-center text-gray-500">Loading...</div>
-                  ) : stats?.recent_bookings?.length > 0 ? (
-                    <div className="divide-y divide-gray-200 max-h-[332px] overflow-y-auto">
-                      {stats.recent_bookings.map((booking: any, index: number) => (
-                        <div key={index} className="p-5 hover:bg-blue-100 transition-colors duration-150">
-                          <div className="flex items-center justify-between">
-                            <div className="flex-1">
-                              <p className="text-sm font-semibold text-gray-900 mb-1">
-                                {booking.first_name} {booking.last_name}
-                              </p>
-                              <p className="text-xs text-gray-600">
-                                Event on {formatDate(booking.event_date)}
-                              </p>
-                            </div>
-                            <Badge
-                              className={`text-xs px-3 py-1 font-medium rounded-[5px] ${
-                                booking.status === 'confirmed'
-                                  ? 'bg-blue-600 text-white hover:bg-blue-700'
-                                  : booking.status === 'pending'
-                                  ? 'bg-orange-500 text-white hover:bg-orange-600'
-                                  : 'bg-red-500 text-white hover:bg-red-600'
-                              }`}
-                            >
-                              {booking.status}
-                            </Badge>
-                          </div>
-                        </div>
-                      ))}
+                  ) : stats?.recent_activities?.length > 0 ? (
+                    <div className="overflow-hidden">
+                      <div className="max-h-[332px] overflow-y-auto">
+                        <table className="w-full">
+                          <thead className={`border-b ${theme === 'dark' ? 'border-gray-700 bg-gray-800/50' : 'border-gray-200 bg-gray-50/50'}`}>
+                            <tr>
+                              <th className={`w-1/3 text-left py-3 px-4 font-semibold text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>Timestamp</th>
+                              <th className={`w-1/4 text-left py-3 px-4 font-semibold text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>Activity</th>
+                              <th className={`w-2/5 text-left py-3 px-4 font-semibold text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>Details</th>
+                            </tr>
+                          </thead>
+                          <tbody className={`divide-y ${theme === 'dark' ? 'divide-gray-700' : 'divide-gray-200'}`}>
+                            {stats.recent_activities.map((activity: any, index: number) => (
+                              <tr key={index} className={`transition-colors duration-150 ${theme === 'dark' ? `hover:bg-gray-700/30 ${index % 2 === 0 ? 'bg-gray-800/20' : 'bg-gray-900/20'}` : `hover:bg-blue-50/30 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/20'}`}`}>
+                                <td className={`py-3 px-4 text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0" />
+                                    <span>{new Date(activity.created_at).toLocaleString()}</span>
+                                  </div>
+                                </td>
+                                <td className={`py-3 px-4 font-medium text-sm ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                                  {activity.activity}
+                                </td>
+                                <td className={`py-3 px-4 text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+                                  <span className="truncate block">{activity.details}</span>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
                   ) : (
-                    <div className="p-5 text-center text-gray-500">
-                      No recent bookings found
+                    <div className="p-8 text-center">
+                      <Activity className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-500">No recent activities found</p>
+                      <p className="text-sm text-gray-400">Booking activities will appear here</p>
                     </div>
                   )}
                 </CardContent>

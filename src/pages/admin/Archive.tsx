@@ -10,6 +10,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Archive as ArchiveIcon, Search, Trash2, RotateCcw, MoreVertical, Filter, Printer, Download, User, Mail, Calendar, MessageSquare } from "lucide-react";
 import { ActionMenu } from "@/components/ui/ActionMenu";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { useSidebar } from "@/hooks/use-sidebar";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -29,6 +31,10 @@ const Archive = () => {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [monthFilter, setMonthFilter] = useState<string>('');
+
+  // Bulk delete states
+  const [selectedArchivedBookings, setSelectedArchivedBookings] = useState<number[]>([]);
+  const [selectedArchivedMessages, setSelectedArchivedMessages] = useState<number[]>([]);
 
   const loadArchivedBookings = useCallback(async () => {
     try {
@@ -61,6 +67,50 @@ const Archive = () => {
       setSortColumn(column);
       setSortDirection('asc');
     }
+  };
+
+  const handleSelectArchivedBooking = (id: number, checked: boolean | string) => {
+    setSelectedArchivedBookings(prev => {
+      if (checked === true) {
+        return [...prev, id];
+      } else {
+        return prev.filter(bookingId => bookingId !== id);
+      }
+    });
+  };
+
+  const handleSelectAllArchivedBookings = (checked: boolean | string) => {
+    if (checked === true) {
+      setSelectedArchivedBookings(sortedArchivedBookings.map(booking => booking.id));
+    } else {
+      setSelectedArchivedBookings([]);
+    }
+  };
+
+  const handleSelectArchivedMessage = (id: number, checked: boolean | string) => {
+    setSelectedArchivedMessages(prev => {
+      if (checked === true) {
+        return [...prev, id];
+      } else {
+        return prev.filter(messageId => messageId !== id);
+      }
+    });
+  };
+
+  const handleSelectAllArchivedMessages = (checked: boolean | string) => {
+    if (checked === true) {
+      setSelectedArchivedMessages(sortedArchivedMessages.map(msg => msg.id));
+    } else {
+      setSelectedArchivedMessages([]);
+    }
+  };
+
+  const clearArchivedBookingSelection = () => {
+    setSelectedArchivedBookings([]);
+  };
+
+  const clearArchivedMessageSelection = () => {
+    setSelectedArchivedMessages([]);
   };
 
   const sortedArchivedBookings = [...archivedBookings].filter(booking => {
@@ -368,10 +418,48 @@ const Archive = () => {
                           <Button onClick={handleExportCSV} variant="outline" size="sm" title="Export CSV">
                             <FileText className="h-4 w-4" />
                           </Button>
-                          <Button variant="outline" onClick={() => {setStatusFilter('all'); setMonthFilter('');}}>
+                          <Button variant="outline" onClick={() => {setStatusFilter('all'); setMonthFilter(''); setSearchTerm('');}}>
                             <Filter className="h-4 w-4 mr-2" />
                             Clear Filters
                           </Button>
+                          {selectedArchivedBookings.length > 0 && (
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="destructive" size="sm" className="bg-red-600 hover:bg-red-700 text-white">
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Delete Selected ({selectedArchivedBookings.length})
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Delete Archived Bookings</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Are you sure you want to permanently delete {selectedArchivedBookings.length} archived booking{selectedArchivedBookings.length > 1 ? 's' : ''}? This action cannot be undone.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel onClick={clearArchivedBookingSelection}>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={async () => {
+                                      try {
+                                        for (const id of selectedArchivedBookings) {
+                                          await api.permanentlyDeleteArchivedItem('bookings', id);
+                                        }
+                                        toast({ title: "Success", description: `${selectedArchivedBookings.length} archived booking${selectedArchivedBookings.length > 1 ? 's' : ''} permanently deleted` });
+                                        clearArchivedBookingSelection();
+                                        loadArchivedBookings();
+                                      } catch (error) {
+                                        toast({ title: "Error", description: "Failed to delete archived bookings", variant: "destructive" });
+                                      }
+                                    }}
+                                    className="bg-red-600 hover:bg-red-700"
+                                  >
+                                    Delete
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -397,6 +485,12 @@ const Archive = () => {
                           <table className="w-full table-fixed">
                             <thead className={`border-b-2 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'}`}>
                               <tr>
+                                <th className={`w-12 text-center py-4 px-6 font-bold sticky top-0 border-r ${theme === 'dark' ? 'text-gray-200 bg-gray-800 border-gray-700' : 'text-gray-800 bg-gray-50 border-gray-200'}`}>
+                                  <Checkbox
+                                    checked={selectedArchivedBookings.length === sortedArchivedBookings.length && sortedArchivedBookings.length > 0}
+                                    onCheckedChange={(checked) => handleSelectAllArchivedBookings(checked === true)}
+                                  />
+                                </th>
                                 <th className={`w-1/3 text-left py-4 px-6 font-bold sticky top-0 cursor-pointer select-none border-r ${theme === 'dark' ? 'text-gray-200 bg-gray-800 hover:bg-gray-700 border-gray-600' : 'text-gray-800 bg-gray-50 hover:bg-gray-100 border-gray-200'}`} onClick={() => handleSort('client')}>
                                   <div className="flex items-center justify-between">
                                     <span>Client</span>
@@ -421,6 +515,12 @@ const Archive = () => {
                             <tbody className={`divide-y ${theme === 'dark' ? 'divide-gray-700' : 'divide-gray-200'}`}>
                               {sortedArchivedBookings.map((booking, index) => (
                                 <tr key={booking.id} className={`transition-colors duration-150 ${theme === 'dark' ? `hover:bg-gray-700/50 ${index % 2 === 0 ? 'bg-gray-800' : 'bg-gray-800/50'}` : `hover:bg-blue-50/50 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}`}>
+                                  <td className={`py-4 px-6 text-center border-r ${theme === 'dark' ? 'border-gray-600' : 'border-gray-100'}`}>
+                                    <Checkbox
+                                      checked={selectedArchivedBookings.includes(booking.id)}
+                                      onCheckedChange={(checked) => handleSelectArchivedBooking(booking.id, checked === true)}
+                                    />
+                                  </td>
                                   <td className={`py-4 px-6 font-semibold border-r ${theme === 'dark' ? 'text-gray-200 border-gray-600' : 'text-gray-900 border-gray-100'}`}>
                                     <div className="flex items-center gap-2">
                                       <User className={`h-4 w-4 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`} />
@@ -532,6 +632,44 @@ const Archive = () => {
                             <Filter className="h-4 w-4 mr-2" />
                             Clear Filters
                           </Button>
+                          {selectedArchivedMessages.length > 0 && (
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="destructive" size="sm" className="bg-red-600 hover:bg-red-700 text-white">
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Delete Selected ({selectedArchivedMessages.length})
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Delete Archived Messages</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Are you sure you want to permanently delete {selectedArchivedMessages.length} archived message{selectedArchivedMessages.length > 1 ? 's' : ''}? This action cannot be undone.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel onClick={clearArchivedMessageSelection}>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={async () => {
+                                      try {
+                                        for (const id of selectedArchivedMessages) {
+                                          await api.permanentlyDeleteArchivedItem('messages', id);
+                                        }
+                                        toast({ title: "Success", description: `${selectedArchivedMessages.length} archived message${selectedArchivedMessages.length > 1 ? 's' : ''} permanently deleted` });
+                                        clearArchivedMessageSelection();
+                                        loadArchivedMessages();
+                                      } catch (error) {
+                                        toast({ title: "Error", description: "Failed to delete archived messages", variant: "destructive" });
+                                      }
+                                    }}
+                                    className="bg-red-600 hover:bg-red-700"
+                                  >
+                                    Delete
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -557,6 +695,12 @@ const Archive = () => {
                           <table className="w-full table-fixed">
                             <thead className="bg-gray-50 border-b-2 border-gray-200">
                               <tr>
+                                <th className="w-12 text-center py-4 px-6 font-bold text-gray-800 sticky top-0 bg-gray-50 border-r border-gray-200">
+                                  <Checkbox
+                                    checked={selectedArchivedMessages.length === sortedArchivedMessages.length && sortedArchivedMessages.length > 0}
+                                    onCheckedChange={(checked) => handleSelectAllArchivedMessages(checked)}
+                                  />
+                                </th>
                                 <th className="w-1/5 text-left py-4 px-6 font-bold text-gray-800 sticky top-0 bg-gray-50 cursor-pointer hover:bg-gray-100 select-none border-r border-gray-200" onClick={() => handleSort('name')}>
                                   <div className="flex items-center justify-between">
                                     <span>Name</span>
@@ -587,6 +731,12 @@ const Archive = () => {
                             <tbody className="divide-y divide-gray-200">
                               {sortedArchivedMessages.map((msg, index) => (
                                 <tr key={msg.id} className={`hover:bg-blue-50/50 transition-colors duration-150 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}>
+                                  <td className="py-4 px-6 text-center border-r border-gray-100">
+                                    <Checkbox
+                                      checked={selectedArchivedMessages.includes(msg.id)}
+                                      onCheckedChange={(checked) => handleSelectArchivedMessage(msg.id, checked)}
+                                    />
+                                  </td>
                                   <td className="py-4 px-6 text-gray-900 font-semibold border-r border-gray-100">
                                     <div className="flex items-center gap-2">
                                       <User className="h-4 w-4 text-gray-400" />

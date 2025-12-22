@@ -57,7 +57,7 @@ const Index = () => {
             title: "Sample Baby Shower",
             date: "December 15, 2024",
             venue: "Garden Terrace",
-            image: "https://images.unsplash.com/photo-1530047625168-4b29bfbbe1fc?w=400"
+            image: "/placeholder.svg"
           }
         ]);
       } finally {
@@ -256,7 +256,7 @@ const Index = () => {
                      <div key={`${event.id}-${index}`} className="bg-white shadow-lg overflow-hidden rounded-lg w-96 flex-shrink-0 hover:scale-105 transition-transform duration-300" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
                        <div className="relative group">
                          <img
-                           src={event.image || '/placeholder.svg'}
+                           src={event.image || '/img/abt.jpg'}
                            alt={event.title}
                            className="w-full h-80 object-cover rounded-t-lg"
                          />

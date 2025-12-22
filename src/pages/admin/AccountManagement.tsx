@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { ActionMenu } from "@/components/ui/ActionMenu";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, Plus, Loader2, Edit, Trash2, Eye, Mail, Phone, Shield, User, Filter, Printer, Download, Calendar } from "lucide-react";
 import { api } from "@/integrations/api/client";
@@ -28,6 +29,7 @@ const AccountManagement = () => {
   const [sortColumn, setSortColumn] = useState<string>('created_at');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [monthFilter, setMonthFilter] = useState<string>('');
+  const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
 
   // Dialog states
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
@@ -211,6 +213,27 @@ const AccountManagement = () => {
   const openViewDialog = (user: any) => {
     setSelectedUser(user);
     setViewDialogOpen(true);
+  };
+
+  const handleSelectUser = (userId: number, checked: boolean) => {
+    if (checked) {
+      setSelectedUsers(prev => [...prev, userId]);
+    } else {
+      setSelectedUsers(prev => prev.filter(id => id !== userId));
+    }
+  };
+
+  const handleSelectAllUsers = (checked: boolean) => {
+    if (checked) {
+      setSelectedUsers(sortedUsers.map(user => user.id));
+    } else {
+      setSelectedUsers([]);
+    }
+  };
+
+  const handleBulkDeleteSuccess = () => {
+    setSelectedUsers([]);
+    loadUsers();
   };
 
   const getRoleBadgeColor = (role: string) => {
@@ -460,6 +483,37 @@ const AccountManagement = () => {
                     <Filter className={`h-4 w-4 mr-2 ${theme === 'dark' ? 'text-white' : ''}`} />
                     Clear Filters
                   </Button>
+                  {selectedUsers.length > 0 && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="sm" title="Delete Selected">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Selected Users</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete {selectedUsers.length} selected user(s)? This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={async () => {
+                            try {
+                              for (const id of selectedUsers) {
+                                await api.deleteUser(id);
+                              }
+                              toast({ title: "Success", description: "Selected users deleted successfully" });
+                              handleBulkDeleteSuccess();
+                            } catch (error) {
+                              toast({ variant: "destructive", title: "Error", description: "Failed to delete users" });
+                            }
+                          }}>Delete</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
                 </div>
               </div>
  
@@ -496,6 +550,12 @@ const AccountManagement = () => {
                             <table className="w-full table-fixed">
                               <thead className={`border-b-2 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'}`}>
                                 <tr>
+                                  <th className={`w-12 text-center py-4 px-6 font-bold sticky top-0 border ${theme === 'dark' ? 'text-gray-200 bg-gray-800 border-gray-600' : 'text-gray-800 bg-gray-100 border-gray-300'}`}>
+                                    <Checkbox
+                                      checked={selectedUsers.length === sortedUsers.length && sortedUsers.length > 0}
+                                      onCheckedChange={(checked) => handleSelectAllUsers(checked as boolean)}
+                                    />
+                                  </th>
                                   <th className={`w-1/6 text-center py-4 px-6 font-bold sticky top-0 border ${theme === 'dark' ? 'text-gray-200 bg-gray-800 border-gray-600' : 'text-gray-800 bg-gray-100 border-gray-300'}`}>Image</th>
                                   <th className={`w-1/4 text-left py-4 px-6 font-bold sticky top-0 cursor-pointer select-none border-r border-l ${theme === 'dark' ? 'text-gray-200 bg-gray-800 hover:bg-gray-700 border-gray-600' : 'text-gray-800 bg-gray-100 hover:bg-gray-200 border-gray-300'}`} onClick={() => handleSort('full_name')}>
                                     <div className="flex items-center justify-between">
@@ -533,6 +593,12 @@ const AccountManagement = () => {
                               <tbody className={`divide-y ${theme === 'dark' ? 'divide-gray-700' : 'divide-gray-200'}`}>
                                   {sortedUsers.map((user, index) => (
                                     <tr key={user.id} className={`transition-colors duration-150 ${theme === 'dark' ? 'hover:bg-gray-700/50 bg-gray-800' : 'hover:bg-blue-50/50 bg-white'}`}>
+                                      <td className={`py-4 px-6 text-center border-r ${theme === 'dark' ? 'border-gray-600' : 'border-gray-100'}`}>
+                                        <Checkbox
+                                          checked={selectedUsers.includes(user.id)}
+                                          onCheckedChange={(checked) => handleSelectUser(user.id, checked as boolean)}
+                                        />
+                                      </td>
                                       <td className={`py-4 px-6 text-center border-r ${theme === 'dark' ? 'border-gray-600' : 'border-gray-100'}`}>
                                         {user.profile_image ? (
                                           <img
