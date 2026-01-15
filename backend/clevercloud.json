@@ -1,0 +1,11 @@
+{
+  "name": "baby-bliss-backend",
+  "description": "Backend API for Baby Bliss application",
+  "type": "node",
+  "build": {
+    "type": "node"
+  },
+  "env": {
+    "NODE_ENV": "production"
+  }
+}
