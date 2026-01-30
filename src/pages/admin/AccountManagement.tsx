@@ -100,8 +100,7 @@ const AccountManagement = () => {
     if (!selectedUser) return;
 
     try {
-      await api.updateUser({
-        id: selectedUser.id,
+      await api.updateUser(selectedUser.id, {
         email: formData.email,
         role: formData.role,
         first_name: formData.first_name,
@@ -384,7 +383,7 @@ const AccountManagement = () => {
     }
   };
 
-  const filteredUsers = users.filter(user => {
+  const filteredUsers = (users || []).filter(user => {
     if (monthFilter) {
       const createdDate = new Date(user.created_at);
       const createdMonth = `${createdDate.getFullYear()}-${String(createdDate.getMonth() + 1).padStart(2, '0')}`;

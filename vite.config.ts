@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
     proxy: {
       '/api': {
-        target: 'http://localhost',
+        target: 'http://localhost:3001',
         changeOrigin: true,
         secure: false,
         pathRewrite: { '^/api': '/api' }, // Keep the /api path as-is
@@ -32,7 +32,7 @@ export default defineConfig(({ mode }) => ({
         },
       },
       '/uploads': {
-        target: 'http://localhost',
+        target: 'http://localhost:3001',
         changeOrigin: true,
         secure: false,
       },

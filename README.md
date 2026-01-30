@@ -1,13 +1,11 @@
 # Baby Bliss Events Management System
 
-A full-stack event management application for Baby Bliss Events with both PHP and Node.js backend options.
+A full-stack event management application for Baby Bliss Events with Node.js backend.
 
 ## Project Structure
 
 - **Frontend**: React + TypeScript + Vite (in `/` root)
-- **Backend Options**:
-  - PHP Backend (traditional, requires XAMPP/WAMP)
-  - Node.js Backend (modern, Vercel-compatible in `/backend`)
+- **Backend**: Node.js + Express.js + MySQL (in `/backend`)
 
 ## Quick Start
 
@@ -20,14 +18,7 @@ npm run dev
 
 This runs the React frontend with mock API responses.
 
-### Full Stack with PHP Backend
-
-1. Set up XAMPP/WAMP with PHP and MySQL
-2. Place PHP files in `htdocs/api/` directory
-3. Import `database.sql`
-4. Run `npm run dev` for frontend
-
-### Full Stack with Node.js Backend (Vercel Ready)
+### Full Stack with Node.js Backend
 
 1. Install frontend dependencies: `npm install`
 2. Install backend dependencies: `cd backend && npm install`
@@ -35,21 +26,14 @@ This runs the React frontend with mock API responses.
 4. Run frontend: `npm run dev` (in separate terminal)
 5. Update `src/integrations/api/client.ts` API_BASE_URL to `http://localhost:3001`
 
-## Backend Options
-
-### PHP Backend (api/ folder)
-
-- Traditional LAMP stack
-- Requires XAMPP/WAMP
-- Good for local development
-- Not suitable for Vercel
+## Backend
 
 ### Node.js Backend (backend/ folder)
 
 - Modern Express.js server
 - Vercel-compatible
-- Serverless ready
-- Better performance
+- MySQL database
+- JWT authentication
 
 ## How can I edit this code?
 
@@ -102,9 +86,8 @@ npm run dev
 This project is built with:
 
 - **Frontend**: React + TypeScript + Vite + shadcn-ui + Tailwind CSS
-- **Backend**: Node.js + Vercel API Routes + PostgreSQL + JWT Authentication
-- **Database**: PostgreSQL (Supabase/Neon/Vercel compatible)
-- **Deployment**: Vercel (Frontend + Serverless API routes)
+- **Backend**: Node.js + Express.js + MySQL + JWT Authentication
+- **Deployment**: Vercel (Frontend) + Render (Backend)
 
 ## How can I deploy this project?
 

@@ -8,8 +8,12 @@ const pool = mysql.createPool({
   database: process.env.DB_NAME || 'baby_bliss',
   port: process.env.DB_PORT || 3306,
   waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
+  connectionLimit: process.env.DB_POOL_SIZE || 25,
+  queueLimit: 0,
+  connectTimeout: 10000,
+  // Enable connection keep-alive
+  enableKeepAlive: true,
+  keepAliveInitialDelay: 10000
 });
 
 // Test database connection
@@ -25,7 +29,38 @@ async function testConnection() {
   }
 }
 
+// Health check function for monitoring
+async function healthCheck() {
+  try {
+    const connection = await pool.getConnection();
+    await connection.ping();
+    connection.release();
+    return { status: 'healthy', message: 'Database connection is active' };
+  } catch (error) {
+    return { status: 'unhealthy', message: error.message };
+  }
+}
+
+// Execute query with automatic connection handling
+async function query(sql, params = []) {
+  try {
+    const [rows] = await pool.execute(sql, params);
+    return rows;
+  } catch (error) {
+    console.error('Query error:', error.message);
+    throw error;
+  }
+}
+
+// Get a connection for transactions
+async function getConnection() {
+  return await pool.getConnection();
+}
+
 module.exports = {
   pool,
-  testConnection
+  testConnection,
+  healthCheck,
+  query,
+  getConnection
 };

@@ -44,8 +44,10 @@ const Messages = () => {
     try {
       setLoading(true);
       const response = await api.getMessages();
-      setMessages(response.messages);
+      setMessages(response?.messages || []);
     } catch (error) {
+      // Set empty array on error to prevent crashes
+      setMessages([]);
       toast({
         title: "Error",
         description: "Failed to load messages",
@@ -274,7 +276,7 @@ const Messages = () => {
     }
   };
 
-  const filteredMessages = messages.filter(msg => {
+  const filteredMessages = (messages || []).filter(msg => {
     if (statusFilter !== 'all' && msg.status !== statusFilter) return false;
     if (monthFilter) {
       const messageDate = new Date(msg.created_at);

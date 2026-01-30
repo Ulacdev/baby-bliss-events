@@ -1,9 +1,40 @@
+# Render Blueprint Configuration for Baby Bliss Backend
+# https://render.com/docs/blueprint-spec
+
 services:
   - type: web
-    name: baby-bliss-backend
+    name: baby-bliss-api
     env: node
+    region: ap-southeast-1 # Singapore (closest to Philippines)
+    plan: free # Use starter tier for testing, upgrade to starter+ for production
     buildCommand: cd backend && npm install
     startCommand: cd backend && npm start
+    healthCheckPath: /health
     envVars:
       - key: NODE_ENV
         value: production
+      - key: PORT
+        value: 10000
+      - key: DB_POOL_SIZE
+        value: "25"
+      - key: JWT_SECRET
+        generateValue: true # Generate a secure random secret
+      - key: FRONTEND_URL
+        # Update this after deploying frontend to Vercel
+        # value: https://your-baby-bliss-frontend.vercel.app
+        fromService:
+          name: baby-bliss-frontend
+          property: url
+
+databases:
+  - name: baby-bliss-db
+    plan: free
+    region: ap-southeast-1
+    # For production, use a paid plan for better performance
+    # plan: starter
+
+# Persistent disk for file uploads (optional)
+# disks:
+#   - name: uploads
+#     mountPath: /app/backend/uploads
+#     sizeGB: 1

@@ -328,7 +328,7 @@ const CalendarView = () => {
                       return eventDate >= today && eventDate <= nextWeek && booking.status === 'confirmed';
                     }).length > 0 ? (
                       <div className="space-y-3">
-                        {calendarData.bookings
+                        {(calendarData?.bookings || [])
                           .filter((booking: any) => {
                             const eventDate = new Date(booking.date);
                             const today = new Date();

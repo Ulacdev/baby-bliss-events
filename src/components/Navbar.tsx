@@ -52,18 +52,6 @@ const Navbar = () => {
       }
     };
     loadData();
-
-    // Reload settings every 5 seconds to reflect changes
-    const interval = setInterval(loadData, 5000);
-
-    // Also reload when window gains focus
-    const handleFocus = () => loadData();
-    window.addEventListener('focus', handleFocus);
-
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener('focus', handleFocus);
-    };
   }, []);
 
   const shouldBeOceanBlue = (hasHeroSection && isScrolled) || (!hasHeroSection);

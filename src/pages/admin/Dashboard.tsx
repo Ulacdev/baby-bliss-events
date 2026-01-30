@@ -36,7 +36,7 @@ const Dashboard = () => {
     try {
       const response = await api.getDashboardStats();
       console.log("Dashboard API Response:", response);
-      setStats(response.stats);
+      setStats(response?.stats || null);
     } catch (error) {
       console.error("Failed to load dashboard stats:", error);
       setStats({
@@ -238,7 +238,7 @@ const Dashboard = () => {
                             </tr>
                           </thead>
                           <tbody className={`divide-y ${theme === 'dark' ? 'divide-gray-700' : 'divide-gray-200'}`}>
-                            {stats.recent_activities.map((activity: any, index: number) => (
+                            {(stats?.recent_activities || []).map((activity: any, index: number) => (
                               <tr key={index} className={`transition-colors duration-150 ${theme === 'dark' ? `hover:bg-gray-700/30 ${index % 2 === 0 ? 'bg-gray-800/20' : 'bg-gray-900/20'}` : `hover:bg-blue-50/30 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/20'}`}`}>
                                 <td className={`py-3 px-4 text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
                                   <div className="flex items-center gap-2">

@@ -47,8 +47,10 @@ const Financial = () => {
   const loadBookings = async () => {
     try {
       const response = await api.getBookings({});
-      setBookings(response.bookings.filter((b: any) => b.package));
+      setBookings((response?.bookings || []).filter((b: any) => b.package));
     } catch (error) {
+      // Set empty array on error to prevent crashes
+      setBookings([]);
       toast({
         variant: "destructive",
         title: "Error",
@@ -63,7 +65,7 @@ const Financial = () => {
     try {
       const response = await api.getPayments();
       const paymentMap: any = {};
-      response.payments.forEach((p: any) => {
+      (response.payments || []).forEach((p: any) => {
         if (p.payment_status === 'paid') {
           paymentMap[p.booking_id] = true;
         }
@@ -402,7 +404,7 @@ const Financial = () => {
 
   const totals = calculateTotals();
 
-  const filteredBookings = bookings.filter(booking => {
+  const filteredBookings = (bookings || []).filter(booking => {
     if (paymentFilter === 'paid' && !payments[booking.id]) return false;
     if (paymentFilter === 'pending' && payments[booking.id]) return false;
     if (monthFilter) {

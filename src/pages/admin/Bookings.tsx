@@ -71,8 +71,10 @@ const Bookings = () => {
   const loadBookings = async () => {
     try {
       const response = await api.getBookings({ search });
-      setBookings(response.bookings);
+      setBookings(response?.bookings || []);
     } catch (error) {
+      // Set empty array on error to prevent crashes
+      setBookings([]);
       toast({
         variant: "destructive",
         title: "Error",
@@ -340,7 +342,7 @@ const Bookings = () => {
       : "bg-red-500 text-white hover:bg-red-600";
   };
 
-  const filteredBookings = bookings.filter(booking => {
+  const filteredBookings = (bookings || []).filter(booking => {
     if (statusFilter !== 'all' && booking.status !== statusFilter) return false;
     if (monthFilter) {
       const bookingDate = new Date(booking.event_date);

@@ -67,8 +67,10 @@ const Clients = () => {
       const response = await api.getClients({ search });
 
       // Admin can view all clients
-      setClients(response.clients);
+      setClients(response?.clients || []);
     } catch (error) {
+      // Set empty array on error to prevent crashes
+      setClients([]);
       console.error("Failed to load clients:", error);
       toast({
         variant: "destructive",
@@ -239,7 +241,7 @@ const Clients = () => {
     loadClients();
   };
 
-  const filteredClients = clients.filter(client => {
+  const filteredClients = (clients || []).filter(client => {
     if (confirmedFilter === 'has_confirmed' && client.confirmed_bookings === 0) return false;
     if (confirmedFilter === 'no_confirmed' && client.confirmed_bookings > 0) return false;
     if (monthFilter) {

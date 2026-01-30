@@ -51,8 +51,8 @@ const Archive = () => {
   const loadArchivedMessages = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await api.getArchivedItems('messages');
-      setArchivedMessages(response.archived_messages || []);
+      const response = await api.getArchivedItems('messages', { search: searchTerm || undefined, limit: 50 });
+      setArchivedMessages(response.items || []);
     } catch (error) {
       toast({ title: "Error", description: "Failed to load archived messages", variant: "destructive" });
     } finally {
@@ -113,7 +113,7 @@ const Archive = () => {
     setSelectedArchivedMessages([]);
   };
 
-  const sortedArchivedBookings = [...archivedBookings].filter(booking => {
+  const sortedArchivedBookings = [...(archivedBookings || [])].filter(booking => {
     if (statusFilter !== 'all' && booking.status !== statusFilter) return false;
     if (monthFilter) {
       const eventDate = new Date(booking.event_date);
@@ -149,7 +149,7 @@ const Archive = () => {
       : "bg-red-500 text-white";
   };
 
-  const sortedArchivedMessages = [...archivedMessages].filter(msg => {
+  const sortedArchivedMessages = [...(archivedMessages || [])].filter(msg => {
     if (statusFilter !== 'all' && msg.status !== statusFilter) return false;
     if (monthFilter) {
       const messageDate = new Date(msg.created_at);

@@ -233,10 +233,11 @@ const AdminHeader = ({ onToggleSidebar, isSidebarCollapsed, isSidebarHovering = 
         // Load unread messages count and recent messages
         try {
           const messagesResponse = await api.getMessages();
-          const unreadMessagesList = messagesResponse.messages.filter((m: any) => m.status === 'unread');
+          const messagesList = messagesResponse?.messages || [];
+          const unreadMessagesList = messagesList.filter((m: any) => m.status === 'unread');
           setUnreadMessages(unreadMessagesList.length);
 
-          recentMessages = messagesResponse.messages
+          recentMessages = messagesList
             .filter((msg: any) => ['unread', 'read'].includes(msg.status))
             .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
             .slice(0, 5)
@@ -252,10 +253,11 @@ const AdminHeader = ({ onToggleSidebar, isSidebarCollapsed, isSidebarHovering = 
         // Load pending bookings count and recent bookings
         try {
           const bookingsResponse = await api.getBookings({});
-          const pendingBookingsList = bookingsResponse.bookings.filter((b: any) => b.status === 'pending');
+          const bookingsList = bookingsResponse?.bookings || [];
+          const pendingBookingsList = bookingsList.filter((b: any) => b.status === 'pending');
           setPendingBookings(pendingBookingsList.length);
 
-          recentBookings = bookingsResponse.bookings
+          recentBookings = bookingsList
             .filter((booking: any) => ['pending', 'confirmed'].includes(booking.status))
             .sort((a: any, b: any) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime())
             .slice(0, 5)

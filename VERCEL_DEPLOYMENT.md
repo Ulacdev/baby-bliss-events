@@ -11,12 +11,14 @@ This guide shows how to deploy both the frontend and backend to Vercel.
 ## Database Setup
 
 ### Option 1: PlanetScale (Recommended for Vercel)
+
 1. Create account at [planetscale.com](https://planetscale.com)
 2. Create a new database
 3. Import the `database.sql` file
 4. Copy the connection details
 
 ### Option 2: Railway
+
 1. Create account at [railway.app](https://railway.app)
 2. Create MySQL database
 3. Import `database.sql`
@@ -25,15 +27,16 @@ This guide shows how to deploy both the frontend and backend to Vercel.
 ## Backend Deployment
 
 ### Step 1: Create Backend Repository
+
 1. Create a new GitHub repository (e.g., `baby-bliss-backend`)
 2. Copy only the backend files:
    ```
-   api/
-   package.json
+   backend/
    database.sql
    ```
 
 ### Step 2: Deploy to Vercel
+
 1. Go to [vercel.com](https://vercel.com)
 2. Click "New Project"
 3. Import your backend repository
@@ -49,12 +52,15 @@ This guide shows how to deploy both the frontend and backend to Vercel.
 5. Deploy
 
 ### Step 3: Get Backend URL
+
 After deployment, copy the Vercel URL (e.g., `https://baby-bliss-backend.vercel.app`)
 
 ## Frontend Deployment
 
 ### Step 1: Update Frontend Configuration
+
 1. In your frontend repository, update `vercel.json`:
+
    ```json
    {
      "env": {
@@ -69,6 +75,7 @@ After deployment, copy the Vercel URL (e.g., `https://baby-bliss-backend.vercel.
    ```
 
 ### Step 2: Deploy Frontend
+
 1. Create a new Vercel project
 2. Import your frontend repository
 3. Vercel will auto-detect it's a Vite project
@@ -78,12 +85,13 @@ After deployment, copy the Vercel URL (e.g., `https://baby-bliss-backend.vercel.
 ## Testing Deployment
 
 1. **Frontend**: Visit your Vercel frontend URL
-2. **API Test**: Visit `https://your-backend-url.vercel.app/api/dashboard.php`
+2. **API Test**: Visit `https://your-backend-url.vercel.app/api/dashboard`
 3. **Login**: Try logging in with `admin@babybliss.com` / `admin123`
 
 ## Environment Variables Summary
 
 ### Backend (.env)
+
 ```
 DB_HOST=your-db-host
 DB_USER=your-db-user
@@ -94,6 +102,7 @@ JWT_SECRET=your-secure-random-string
 ```
 
 ### Frontend (.env)
+
 ```
 VITE_API_BASE_URL=https://your-backend.vercel.app
 ```
@@ -101,16 +110,19 @@ VITE_API_BASE_URL=https://your-backend.vercel.app
 ## Troubleshooting
 
 ### Database Connection Issues
+
 - Ensure your database allows connections from `0.0.0.0/0` (PlanetScale does this automatically)
 - Check firewall settings
 - Verify credentials
 
 ### API 404 Errors
-- Ensure API routes are in the `api/` folder
+
+- Ensure API routes are configured correctly in backend/
 - Check Vercel function logs
 - Verify environment variables are set
 
 ### CORS Issues
+
 - Vercel handles CORS automatically for API routes
 - If issues persist, check your API route headers
 
@@ -118,7 +130,6 @@ VITE_API_BASE_URL=https://your-backend.vercel.app
 
 ```
 baby-bliss-frontend/     # Frontend Vercel project
-├── api/                 # Vercel API routes
 ├── src/                 # React source
 ├── public/              # Static assets
 ├── package.json
@@ -126,7 +137,7 @@ baby-bliss-frontend/     # Frontend Vercel project
 └── .env
 
 baby-bliss-backend/      # Backend Vercel project (optional separate)
-├── api/                 # API routes
+├── backend/              # Express.js server
 ├── package.json
 └── database.sql
 ```
@@ -140,8 +151,9 @@ baby-bliss-backend/      # Backend Vercel project (optional separate)
 ## Support
 
 If you encounter issues:
+
 1. Check Vercel deployment logs
 2. Verify environment variables
 3. Test database connectivity
 4. Check API routes are working</content>
-</xai:function_call">VERCEL_DEPLOYMENT.md
+   </xai:function_call">VERCEL_DEPLOYMENT.md

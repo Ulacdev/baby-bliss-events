@@ -15,32 +15,42 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up auth state listener FIRST
-    const { data: { subscription } } = auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
+    // Check for token in localStorage first (fast, no API call needed)
+    const token = localStorage.getItem('auth_token');
+    
+    if (token) {
+      // Token exists, user is logged in
+      setSession({ user: { id: '1' }, access_token: token });
+      
+      // Get user role from localStorage
+      const storedRole = localStorage.getItem('user_role');
+      setUserRole(storedRole || 'staff');
+      setLoading(false);
+    } else {
+      // No token, check session via API
+      api.getSession().then((response) => {
+        setSession(response.session);
+        
+        // Get user role from localStorage or API response
+        const storedRole = localStorage.getItem('user_role');
+        setUserRole(storedRole || response.user?.role || 'client');
+        setLoading(false);
 
-        if (!session && event === "SIGNED_OUT") {
+        if (!response.session) {
           navigate("/auth");
         }
-      }
-    );
-
-    // THEN check for existing session
-    api.getSession().then((response) => {
-      setSession(response.session);
-      
-      // Get user role from localStorage or API response
-      const storedRole = localStorage.getItem('user_role');
-      setUserRole(storedRole || response.user?.role || 'client');
-      setLoading(false);
-
-      if (!response.session) {
-        navigate("/auth");
-      }
-    });
-
-    return () => subscription.unsubscribe();
+      }).catch(() => {
+        // If API fails, check localStorage for token
+        const localToken = localStorage.getItem('auth_token');
+        if (localToken) {
+          setSession({ access_token: localToken });
+          setUserRole(localStorage.getItem('user_role') || 'staff');
+        } else {
+          navigate("/auth");
+        }
+        setLoading(false);
+      });
+    }
   }, [navigate]);
 
   // Check if user has required role

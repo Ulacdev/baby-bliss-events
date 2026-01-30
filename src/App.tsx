@@ -67,11 +67,6 @@ const AppContent = () => {
     };
 
     init();
-
-    // Reload settings every 30 seconds to reflect admin changes
-    const interval = setInterval(loadAndApplySettings, 30000);
-
-    return () => clearInterval(interval);
   }, []);
 
   const loading = appLoading || authLoading;
@@ -95,17 +90,17 @@ const AppContent = () => {
             <Route path="/auth" element={<Auth />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/admin" element={<Dashboard />} />
-            <Route path="/admin/calendar" element={<CalendarView />} />
-            <Route path="/admin/clients" element={<Clients />} />
-            <Route path="/admin/bookings" element={<Bookings />} />
-            <Route path="/admin/financial" element={<Financial />} />
-            <Route path="/admin/reports" element={<Reports />} />
-            <Route path="/admin/archive" element={<Archive />} />
-            <Route path="/admin/messages" element={<Messages />} />
-            <Route path="/admin/profile" element={<Profile />} />
-            <Route path="/admin/settings" element={<Settings />} />
-            <Route path="/admin/accounts" element={<AccountManagement />} />
+            <Route path="/admin" element={<ProtectedRoute requiredRole={['admin', 'staff']}><Dashboard /></ProtectedRoute>} />
+            <Route path="/admin/calendar" element={<ProtectedRoute requiredRole={['admin', 'staff']}><CalendarView /></ProtectedRoute>} />
+            <Route path="/admin/clients" element={<ProtectedRoute requiredRole={['admin', 'staff']}><Clients /></ProtectedRoute>} />
+            <Route path="/admin/bookings" element={<ProtectedRoute requiredRole={['admin', 'staff']}><Bookings /></ProtectedRoute>} />
+            <Route path="/admin/financial" element={<ProtectedRoute requiredRole={['admin']}><Financial /></ProtectedRoute>} />
+            <Route path="/admin/reports" element={<ProtectedRoute requiredRole={['admin']}><Reports /></ProtectedRoute>} />
+            <Route path="/admin/archive" element={<ProtectedRoute requiredRole={['admin', 'staff']}><Archive /></ProtectedRoute>} />
+            <Route path="/admin/messages" element={<ProtectedRoute requiredRole={['admin', 'staff']}><Messages /></ProtectedRoute>} />
+            <Route path="/admin/profile" element={<ProtectedRoute requiredRole={['admin', 'staff']}><Profile /></ProtectedRoute>} />
+            <Route path="/admin/settings" element={<ProtectedRoute requiredRole={['admin']}><Settings /></ProtectedRoute>} />
+            <Route path="/admin/accounts" element={<ProtectedRoute requiredRole={['admin']}><AccountManagement /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

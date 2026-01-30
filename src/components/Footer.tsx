@@ -25,18 +25,6 @@ const Footer = () => {
       }
     };
     loadSettings();
-
-    // Reload settings every 30 seconds to reflect changes
-    const interval = setInterval(loadSettings, 30000);
-
-    // Also reload when window gains focus
-    const handleFocus = () => loadSettings();
-    window.addEventListener('focus', handleFocus);
-
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener('focus', handleFocus);
-    };
   }, []);
   return (
     <footer className="text-white" style={{background: 'linear-gradient(135deg, #0077BE 0%, #0096C7 50%, #00A8E8 100%)'}}>
