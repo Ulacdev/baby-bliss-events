@@ -243,7 +243,11 @@ app.get('/api/settings', (req, res) => {
   });
 });
 
-// Vercel serverless handler
-export default (req, res) => {
-  app(req, res);
+// Export for Vercel
+export const config = {
+  api: {
+    bodyParser: false,
+  },
 };
+
+export default app;
