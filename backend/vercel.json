@@ -4,5 +4,10 @@
   "outputDirectory": ".",
   "installCommand": "npm install",
   "framework": null,
-  "regions": ["sin1"]
+  "regions": ["sin1"],
+  "functions": {
+    "vercel.js": {
+      "maxDuration": 30
+    }
+  }
 }
