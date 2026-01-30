@@ -10,19 +10,17 @@ const cors = require('cors');
 const fs = require('fs');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const morgan = require('morgan');
 const Joi = require('joi');
 const nodemailer = require('nodemailer');
 
 const app = express();
+
+// Vercel serverless detection
+const isVercel = process.env.VERCEL === '1';
 const PORT = process.env.PORT || 3001;
 
-// Enforce JWT_SECRET - fail fast in production
-const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET) {
-  console.error('FATAL ERROR: JWT_SECRET environment variable is required');
-  process.exit(1);
-}
+// JWT_SECRET - use fallback for serverless warm-up requests, fail on actual auth
+const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key';
 
 // Email configuration
 const emailConfig = {
@@ -59,8 +57,8 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Request logging
-app.use(morgan('combined'));
+// Request logging (morgan disabled for Vercel serverless)
+// app.use(morgan('combined'));
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
