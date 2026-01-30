@@ -4,10 +4,5 @@
   "outputDirectory": ".",
   "installCommand": "npm install",
   "framework": null,
-  "regions": ["sin1"],
-  "functions": {
-    "api/**/*.cjs": {
-      "maxDuration": 30
-    }
-  }
+  "regions": ["sin1"]
 }
