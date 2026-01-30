@@ -6,9 +6,6 @@
   "devCommand": "npm run dev",
   "installCommand": "npm install",
   "regions": ["sin1"],
-  "env": {
-    "VITE_API_BASE_URL": "@api-base-url"
-  },
   "rewrites": [
     {
       "source": "/api/(.*)",
