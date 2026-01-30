@@ -1,8 +1,13 @@
 {
   "version": 2,
-  "buildCommand": "cd backend && npm install",
+  "buildCommand": "npm install",
   "outputDirectory": ".",
   "installCommand": "npm install",
   "framework": null,
-  "regions": ["sin1"]
+  "regions": ["sin1"],
+  "functions": {
+    "api/**/*.js": {
+      "maxDuration": 30
+    }
+  }
 }
