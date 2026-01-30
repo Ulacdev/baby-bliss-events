@@ -35,13 +35,12 @@ const emailConfig = {
   },
 };
 
-// Create email transporter (with fallback for older versions)
+// Create email transporter
 let transporter;
 try {
-  if (typeof nodemailer.createTransporter === 'function') {
-    transporter = nodemailer.createTransporter(emailConfig);
+  if (nodemailer.createTransport) {
+    transporter = nodemailer.createTransport(emailConfig);
   } else {
-    // Fallback for older nodemailer versions
     transporter = nodemailer(emailConfig);
   }
 } catch (error) {
