@@ -1,0 +1,471 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Great+Vibes&display=swap');
+
+@layer base {
+  :root {
+    /* Baby Bliss Theme - Soft & Welcoming */
+    --background: 0 0% 100%;
+    --foreground: 210 29% 24%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 210 29% 24%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 29% 24%;
+
+    /* Baby Blue Primary */
+    --primary: 200 70% 75%;
+    --primary-foreground: 0 0% 100%;
+    
+    /* Soft Pink Accent */
+    --secondary: 350 100% 90%;
+    --secondary-foreground: 210 29% 24%;
+
+    --muted: 220 14% 96%;
+    --muted-foreground: 210 10% 50%;
+
+    --accent: 350 100% 90%;
+    --accent-foreground: 210 29% 24%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 200 70% 75%;
+
+    --radius: 1.25rem;
+    
+    /* Custom Baby Bliss Tokens */
+    --baby-blue: 200 70% 75%;
+    --slate-blue: 210 29% 24%;
+    --light-gray: 220 14% 98%;
+    
+    /* Gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(200 70% 75%), hsl(200 70% 95%));
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(220 14% 98%));
+    
+    /* Shadows */
+    --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.06);
+    --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.12);
+    
+    /* Transitions */
+    --transition-smooth: all 0.3s ease;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 210 29% 12%;
+    --foreground: 0 0% 100%;
+
+    --card: 210 29% 16%;
+    --card-foreground: 0 0% 100%;
+
+    --popover: 210 29% 16%;
+    --popover-foreground: 0 0% 100%;
+
+    --primary: 200 70% 65%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 350 80% 70%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 210 29% 20%;
+    --muted-foreground: 220 10% 60%;
+
+    --accent: 350 80% 70%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62.8% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 210 29% 20%;
+    --input: 210 29% 20%;
+    --ring: 200 70% 65%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+.gradient-hero {
+  background: var(--gradient-hero);
+}
+
+.gradient-card {
+  background: var(--gradient-card);
+}
+
+.shadow-soft {
+  box-shadow: var(--shadow-soft);
+}
+
+.shadow-card {
+  box-shadow: var(--shadow-card);
+}
+
+.shadow-hover {
+  box-shadow: var(--shadow-hover);
+}
+
+.transition-smooth {
+  transition: var(--transition-smooth);
+}
+
+/* 3D Effects */
+.transform-3d {
+  transform-style: preserve-3d;
+}
+
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+/* Smooth 3D animations */
+@keyframes float3d {
+  0%, 100% {
+    transform: translateY(0px) rotateX(0deg) rotateY(0deg);
+  }
+  50% {
+    transform: translateY(-10px) rotateX(5deg) rotateY(5deg);
+  }
+}
+
+.animate-float3d {
+  animation: float3d 6s ease-in-out infinite;
+}
+
+/* Canvas container */
+.canvas-container {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.5rem;
+}
+
+/* Glassmorphism effect */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Button hover effect - bottom to top */
+.btn-hover-slide {
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.btn-hover-slide::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 0;
+  background-color: rgb(59, 130, 246);
+  transition: height 0.3s ease;
+  z-index: -1;
+}
+
+.btn-hover-slide:hover::before {
+  height: 100%;
+}
+
+/* Soft slideshow animation */
+@keyframes softSlideIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.95) translateY(20px);
+    filter: blur(10px) brightness(0.8);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(0.98) translateY(10px);
+    filter: blur(5px) brightness(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1.05) translateY(0px);
+    filter: blur(0px) brightness(1.1);
+  }
+}
+
+@keyframes softFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+}
+
+@keyframes slideInLeft {
+  0% {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0px);
+  }
+}
+
+@keyframes slideInRight {
+  0% {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0px);
+  }
+}
+
+.animate-page-fade-in {
+  animation: softFadeIn 0.5s ease-out;
+}
+
+.animate-fade-in-delay-1 {
+  animation: softFadeIn 0.5s ease-out 0.2s both;
+}
+
+.animate-fade-in-delay-2 {
+  animation: softFadeIn 0.5s ease-out 0.4s both;
+}
+
+.animate-fade-in-delay-3 {
+  animation: softFadeIn 0.5s ease-out 0.6s both;
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 0.8s ease-out both;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.8s ease-out both;
+}
+
+.animate-slide-in-left-delay-1 {
+  animation: slideInLeft 0.8s ease-out 0.2s both;
+}
+
+.animate-slide-in-right-delay-1 {
+  animation: slideInRight 0.8s ease-out 0.2s both;
+}
+
+/* Scroll-triggered animations */
+.animate-scroll-fade-in {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.6s ease-out;
+}
+
+.animate-scroll-slide-left {
+  opacity: 0;
+  transform: translateX(-50px);
+  transition: all 0.8s ease-out;
+}
+
+.animate-scroll-slide-right {
+  opacity: 0;
+  transform: translateX(50px);
+  transition: all 0.8s ease-out;
+}
+
+.animate-scroll-fade-in.animate-visible,
+.animate-scroll-slide-left.animate-visible,
+.animate-scroll-slide-right.animate-visible {
+  opacity: 1;
+  transform: translateX(0) translateY(0);
+}
+
+/* Left-to-right line hover animation for navbar */
+.navbar-link-hover {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.navbar-link-hover::before {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  width: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #ff0000, #ff4444, #ff0000);
+  transition: width 0.4s ease;
+  z-index: 1;
+  border-radius: 2px;
+}
+
+.navbar-link-hover:hover::before {
+  width: 100%;
+}
+
+.navbar-link-hover::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: #ff0000;
+  transition: transform 0.4s ease;
+  transform: scaleX(0);
+  transform-origin: left;
+  z-index: 2;
+  border-radius: 2px;
+}
+
+.navbar-link-hover:hover::after {
+  transform: scaleX(1);
+}
+
+/* Enhanced Login button hover effects */
+.login-btn-hover {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  background: transparent;
+  border: 2px solid white;
+  color: white;
+}
+
+.login-btn-hover::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: left 0.5s ease;
+  z-index: 1;
+}
+
+.login-btn-hover:hover::before {
+  left: 100%;
+}
+
+.login-btn-hover:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  border-color: #ff0000 !important;
+  box-shadow: 0 0 30px rgba(255, 0, 0, 0.8) !important;
+  transform: translateY(-3px) scale(1.05) !important;
+}
+
+.login-btn-hover:active {
+  transform: translateY(0) scale(1);
+}
+
+/* Premium Admin Font */
+.font-admin-premium {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight: 300;
+  letter-spacing: -0.01em;
+}
+
+/* Cyberpunk Ocean Blue Shadow */
+.shadow-cyber-ocean {
+  box-shadow: 0 0 0 1px rgba(14, 165, 233, 0.3);
+  border: 1px solid rgba(14, 165, 233, 0.2);
+  background: linear-gradient(135deg,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(248, 250, 252, 0.9) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.shadow-cyber-ocean:hover {
+  box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.4);
+  border-color: rgba(14, 165, 233, 0.4);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Neon Glow Effects */
+.neon-glow-blue {
+  box-shadow:
+    0 0 5px rgba(14, 165, 233, 0.5),
+    0 0 10px rgba(14, 165, 233, 0.3),
+    0 0 15px rgba(14, 165, 233, 0.2),
+    0 0 20px rgba(14, 165, 233, 0.1);
+}
+
+.neon-glow-blue:hover {
+  box-shadow:
+    0 0 10px rgba(14, 165, 233, 0.8),
+    0 0 20px rgba(14, 165, 233, 0.6),
+    0 0 30px rgba(14, 165, 233, 0.4),
+    0 0 40px rgba(14, 165, 233, 0.2);
+}
+
+/* Glassmorphism Effect */
+.glass-admin {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* Gradient Text */
+.gradient-text-admin {
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 50%, #0369a1 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Auto-scroll animation for events */
+@keyframes autoScroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-auto-scroll {
+  animation: autoScroll 30s linear infinite;
+}
+
+.animate-auto-scroll.paused {
+  animation-play-state: paused;
+}

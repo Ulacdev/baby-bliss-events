@@ -1,0 +1,8 @@
+{
+  "version": 2,
+  "buildCommand": "cd backend && npm install",
+  "outputDirectory": ".",
+  "installCommand": "npm install",
+  "framework": null,
+  "regions": ["sin1"]
+}
