@@ -9,7 +9,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/api/vercel.js"
+      "destination": "/api/vercel.cjs"
     }
   ],
   "headers": [
