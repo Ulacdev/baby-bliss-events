@@ -1413,13 +1413,18 @@ const gracefulShutdown = async (signal) => {
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
-// Start server
-app.listen(PORT, async () => {
-  console.log(`Baby Bliss API Server running on port ${PORT}`);
-  const dbConnected = await testConnection();
-  if (dbConnected) {
-    console.log('Database connected successfully');
-  } else {
-    console.log('Database connection failed - check your .env configuration');
-  }
-});
+// Start server - only when not running on Vercel (Vercel uses the exported app)
+if (process.env.VERCEL === undefined) {
+  app.listen(PORT, async () => {
+    console.log(`Baby Bliss API Server running on port ${PORT}`);
+    const dbConnected = await testConnection();
+    if (dbConnected) {
+      console.log('Database connected successfully');
+    } else {
+      console.log('Database connection failed - check your .env configuration');
+    }
+  });
+}
+
+// Export app for Vercel serverless functions
+module.exports = app;
