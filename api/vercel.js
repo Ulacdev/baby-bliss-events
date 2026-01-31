@@ -139,7 +139,7 @@ const pool = mysql.createPool({
   database: process.env.DB_NAME || 'baby_bliss',
   port: process.env.DB_PORT || 3306,
   waitForConnections: true,
-  connectionLimit: 25,
+  connectionLimit: 3,
   queueLimit: 0,
   connectTimeout: 10000
 });
@@ -816,14 +816,24 @@ app.put('/api/settings', authenticateToken, async (req, res) => {
 });
 
 // ==================== UPLOAD ROUTE ====================
-app.post('/api/upload', authenticateToken, upload.array('images', 10), (req, res) => {
+app.post('/api/upload', authenticateToken, upload.fields([{ name: 'images', maxCount: 10 }, { name: 'files[]', maxCount: 10 }]), (req, res) => {
   try {
-    const files = req.files.map(f => ({
-      filename: f.filename,
-      originalname: f.originalname,
-      size: f.size,
-      mimetype: f.mimetype
-    }));
+    const files = [];
+    
+    // Handle both field names
+    if (req.files && req.files.length > 0) {
+      // If using upload.fields(), req.files is an array of objects with fieldName and other properties
+      req.files.forEach((f) => {
+        if (f.fieldname === 'images' || f.fieldname === 'files[]') {
+          files.push({
+            filename: f.filename,
+            originalname: f.originalname,
+            size: f.size,
+            mimetype: f.mimetype
+          });
+        }
+      });
+    }
     sendResponse(res, { files }, 'Upload successful');
   } catch (error) {
     sendError(res, 'Upload failed', 'UPLOAD_ERROR', 500, error.message);
