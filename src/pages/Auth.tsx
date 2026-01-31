@@ -89,9 +89,11 @@ const Auth = () => {
       <div className="relative z-10 w-full max-w-sm">
         <div className="bg-white/10 rounded-2xl shadow-2xl border border-white/30 p-4">
           <div className="text-center mb-3">
-            <h1 className="text-3xl font-bold text-white drop-shadow-lg mb-1">
-              Baby Bliss
-            </h1>
+            <img 
+              src="/Baby_Bliss_White_Text_Character-removebg-preview.png" 
+              alt="Baby Bliss Logo" 
+              className="w-48 mx-auto drop-shadow-lg mb-2"
+            />
             <p className="text-white drop-shadow-md text-sm font-medium">
               Welcome back
             </p>
