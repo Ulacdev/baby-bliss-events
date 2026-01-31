@@ -10,8 +10,8 @@ const Navbar = () => {
   const [session, setSession] = useState<any>(null);
   const [settings, setSettings] = useState({
     general_site_title: 'Baby Bliss',
-    general_logo_url: '/Baby_Cloud_To_Bliss_Text_Changeb.png',
-    general_logo_size: '32',
+    general_logo_url: '/Baby_Bliss_White_Text_Character-removebg-preview.png',
+    general_logo_size: '48',
     general_company_name: 'Baby Bliss Events',
     navbar_nav_home_text: 'Home',
     navbar_nav_about_text: 'About',
